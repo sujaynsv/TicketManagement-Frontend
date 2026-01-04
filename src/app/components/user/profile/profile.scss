@@ -1,0 +1,134 @@
+.profile-container {
+  max-width: 900px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.loading-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 400px;
+}
+
+.header-card {
+  margin-bottom: 2rem;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+
+    .back-button {
+      color: white;
+    }
+
+    .header-info {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+
+      .avatar {
+        mat-icon {
+          font-size: 5rem;
+          width: 5rem;
+          height: 5rem;
+        }
+      }
+
+      h1 {
+        margin: 0;
+        font-size: 2rem;
+      }
+
+      p {
+        margin: 0.25rem 0 0 0;
+        opacity: 0.9;
+      }
+    }
+
+    button {
+      color: white;
+      border-color: white;
+    }
+  }
+}
+
+.profile-card, .info-card {
+  margin-bottom: 2rem;
+
+  .full-width {
+    width: 100%;
+    margin-bottom: 1rem;
+  }
+
+  .save-btn {
+    width: 100%;
+    margin-top: 1rem;
+
+    mat-spinner {
+      display: inline-block;
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+.info-card {
+  .info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+
+    .label {
+      font-weight: 500;
+      color: #666;
+    }
+
+    .value {
+      color: #333;
+      font-weight: 500;
+    }
+  }
+
+  mat-divider {
+    margin: 0;
+  }
+}
+
+@media (max-width: 600px) {
+  .profile-container {
+    padding: 0.5rem;
+  }
+
+  .header-card .header-content {
+    flex-direction: column;
+    align-items: flex-start;
+
+    .header-info {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+
+      .avatar mat-icon {
+        font-size: 4rem;
+        width: 4rem;
+        height: 4rem;
+      }
+    }
+
+    button {
+      width: 100%;
+    }
+  }
+
+  .info-item {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.5rem;
+  }
+}

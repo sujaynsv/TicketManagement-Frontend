@@ -1,0 +1,204 @@
+<div class="dashboard-container">
+  <!-- Header -->
+  <mat-card class="header-card">
+    <div class="header-content">
+      <div class="welcome-section">
+        <h1>Welcome back, {{ username }}!</h1>
+        <p>Manage your support tickets</p>
+      </div>
+      <div class="header-actions">
+        <button mat-icon-button [routerLink]="['/user/profile']" matTooltip="My Profile">
+          <mat-icon>account_circle</mat-icon>
+        </button>
+        <button mat-raised-button color="primary" (click)="createTicket()">
+          <mat-icon>add</mat-icon>
+          New Ticket
+        </button>
+        <button mat-stroked-button (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          Logout
+        </button>
+      </div>
+    </div>
+  </mat-card>
+
+  <!-- Filters -->
+  <mat-card class="filters-card">
+    <div class="filters-header">
+      <h3><mat-icon>filter_list</mat-icon> Filters</h3>
+      <button 
+        mat-stroked-button 
+        *ngIf="hasActiveFilters()"
+        (click)="clearFilters()"
+        color="warn">
+        <mat-icon>clear</mat-icon>
+        Clear Filters
+      </button>
+    </div>
+
+    <div class="filters-grid">
+      <!-- Status Filter -->
+      <mat-form-field appearance="outline">
+        <mat-label>Status</mat-label>
+        <mat-select [(ngModel)]="selectedStatus" (selectionChange)="onFilterChange()">
+          <mat-option *ngFor="let option of statusOptions" [value]="option.value">
+            {{ option.label }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matSuffix>list</mat-icon>
+      </mat-form-field>
+
+      <!-- Search -->
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Search</mat-label>
+        <input 
+          matInput 
+          [(ngModel)]="searchQuery" 
+          (ngModelChange)="onFilterChange()" 
+          placeholder="Search by title or ticket number">
+        <mat-icon matSuffix>search</mat-icon>
+      </mat-form-field>
+
+      <!-- Start Date -->
+      <mat-form-field appearance="outline">
+        <mat-label>From Date</mat-label>
+        <input 
+          matInput 
+          [matDatepicker]="startPicker" 
+          [(ngModel)]="startDate"
+          (dateChange)="onFilterChange()"
+          placeholder="Start date">
+        <mat-icon matSuffix (click)="startPicker.open()">calendar_today</mat-icon>
+        <mat-datepicker #startPicker></mat-datepicker>
+      </mat-form-field>
+
+      <!-- End Date -->
+      <mat-form-field appearance="outline">
+        <mat-label>To Date</mat-label>
+        <input 
+          matInput 
+          [matDatepicker]="endPicker" 
+          [(ngModel)]="endDate"
+          (dateChange)="onFilterChange()"
+          placeholder="End date">
+        <mat-icon matSuffix (click)="endPicker.open()">calendar_today</mat-icon>
+        <mat-datepicker #endPicker></mat-datepicker>
+      </mat-form-field>
+
+      <!-- Sort By -->
+      <mat-form-field appearance="outline">
+        <mat-label>Sort By</mat-label>
+        <mat-select [(ngModel)]="sortBy" (selectionChange)="onFilterChange()">
+          <mat-option *ngFor="let option of sortOptions" [value]="option.value">
+            {{ option.label }}
+          </mat-option>
+        </mat-select>
+        <mat-icon matSuffix>sort</mat-icon>
+      </mat-form-field>
+    </div>
+
+    <!-- Results Count -->
+    <div class="results-info">
+      <p>
+        <strong>{{ filteredTickets.length }}</strong> ticket{{ filteredTickets.length !== 1 ? 's' : '' }} found
+        <span *ngIf="filteredTickets.length !== tickets.length"> ({{ tickets.length }} total)</span>
+      </p>
+    </div>
+  </mat-card>
+
+  <!-- Loading Spinner -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <!-- No Tickets -->
+  <div *ngIf="!loading && filteredTickets.length === 0" class="no-tickets">
+    <mat-icon>inbox</mat-icon>
+    <h2>{{ tickets.length === 0 ? 'No tickets yet' : 'No tickets match your filters' }}</h2>
+    <p *ngIf="tickets.length === 0">Create your first support ticket to get started</p>
+    <p *ngIf="tickets.length > 0">Try adjusting your filters</p>
+    <button mat-raised-button color="primary" (click)="createTicket()" *ngIf="tickets.length === 0">
+      <mat-icon>add</mat-icon>
+      Create Ticket
+    </button>
+    <button mat-stroked-button (click)="clearFilters()" *ngIf="tickets.length > 0">
+      <mat-icon>clear</mat-icon>
+      Clear Filters
+    </button>
+  </div>
+
+  <!-- Tickets Grid -->
+  <div *ngIf="!loading && filteredTickets.length > 0" class="tickets-grid">
+    <mat-card *ngFor="let ticket of filteredTickets" class="ticket-card">
+      <div class="ticket-card-content" (click)="viewTicket(ticket.ticketId)">
+        <mat-card-header>
+          <div class="ticket-header">
+            <div class="ticket-number">#{{ ticket.ticketNumber }}</div>
+            <button 
+              mat-icon-button 
+              [matMenuTriggerFor]="ticketMenu"
+              (click)="$event.stopPropagation()">
+              <mat-icon>more_vert</mat-icon>
+            </button>
+          </div>
+        </mat-card-header>
+
+        <mat-card-content>
+          <h3>{{ ticket.title }}</h3>
+          <p class="description">{{ ticket.description }}</p>
+          
+          <div class="ticket-meta">
+            <mat-chip-set>
+              <mat-chip [color]="getStatusColor(ticket.status)" highlighted>
+                {{ ticket.status }}
+              </mat-chip>
+              <mat-chip *ngIf="ticket.priority" [color]="getPriorityColor(ticket.priority)" highlighted>
+                {{ ticket.priority }}
+              </mat-chip>
+              <mat-chip>
+                <mat-icon matChipAvatar>category</mat-icon>
+                {{ ticket.category }}
+              </mat-chip>
+            </mat-chip-set>
+          </div>
+
+          <div class="ticket-tags" *ngIf="ticket.tags && ticket.tags.length > 0">
+            <mat-chip-set>
+              <mat-chip *ngFor="let tag of ticket.tags.slice(0, 3)">{{ tag }}</mat-chip>
+              <mat-chip *ngIf="ticket.tags.length > 3">+{{ ticket.tags.length - 3 }}</mat-chip>
+            </mat-chip-set>
+          </div>
+        </mat-card-content>
+
+        <mat-card-footer>
+          <div class="ticket-footer">
+            <div class="ticket-stats">
+              <span><mat-icon>comment</mat-icon> {{ ticket.commentCount || 0 }}</span>
+              <span><mat-icon>attach_file</mat-icon> {{ ticket.attachmentCount || 0 }}</span>
+              <span><mat-icon>schedule</mat-icon> {{ formatDate(ticket.createdAt) }}</span>
+            </div>
+            <div class="assigned-to" *ngIf="ticket.assignedToUsername">
+              <mat-icon>person</mat-icon>
+              {{ ticket.assignedToUsername }}
+            </div>
+          </div>
+        </mat-card-footer>
+      </div>
+
+      <!-- Ticket Menu -->
+      <mat-menu #ticketMenu="matMenu">
+        <button mat-menu-item (click)="viewTicket(ticket.ticketId)">
+          <mat-icon>visibility</mat-icon>
+          <span>View Details</span>
+        </button>
+        <button 
+          mat-menu-item 
+          *ngIf="canCloseTicket(ticket)"
+          (click)="closeTicket(ticket, $event)">
+          <mat-icon>check_circle</mat-icon>
+          <span>Close Ticket</span>
+        </button>
+      </mat-menu>
+    </mat-card>
+  </div>
+</div>

@@ -1,0 +1,119 @@
+.create-ticket-container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.form-card {
+  mat-card-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 2rem;
+    margin: -16px -16px 2rem -16px;
+    border-radius: 4px 4px 0 0;
+
+    .header-content {
+      h1 {
+        margin: 0;
+        font-size: 1.8rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+
+        mat-icon {
+          font-size: 2rem;
+          width: 2rem;
+          height: 2rem;
+        }
+      }
+
+      p {
+        margin: 0.5rem 0 0 0;
+        opacity: 0.9;
+      }
+    }
+  }
+
+  mat-card-content {
+    padding: 2rem;
+  }
+}
+
+.full-width {
+  width: 100%;
+  margin-bottom: 1rem;
+}
+
+.file-upload-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  background: #f9f9f9;
+
+  h3 {
+    margin: 0 0 1rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #333;
+  }
+
+  .file-hint {
+    margin: 0.5rem 0 0 0;
+    font-size: 0.875rem;
+    color: #666;
+  }
+
+  .selected-files {
+    margin-top: 1.5rem;
+
+    h4 {
+      margin: 0 0 1rem 0;
+      color: #333;
+    }
+
+    mat-chip-set {
+      mat-chip {
+        margin: 0.5rem 0.5rem 0 0;
+      }
+    }
+  }
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid #eee;
+
+  button {
+    min-width: 120px;
+    
+    mat-spinner {
+      display: inline-block;
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+@media (max-width: 600px) {
+  .create-ticket-container {
+    margin: 1rem;
+    padding: 0;
+  }
+
+  .form-card mat-card-content {
+    padding: 1rem;
+  }
+
+  .action-buttons {
+    flex-direction: column;
+
+    button {
+      width: 100%;
+    }
+  }
+}

@@ -1,0 +1,164 @@
+<div class="profile-container">
+  
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <!-- Profile Content -->
+  <div *ngIf="!loading && user">
+    
+    <!-- Header -->
+    <mat-card class="header-card">
+      <div class="header-content">
+        <button mat-icon-button (click)="goBack()" class="back-button">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        
+        <div class="header-info">
+          <div class="avatar">
+            <mat-icon>account_circle</mat-icon>
+          </div>
+          <div>
+            <h1>{{ user.name }}</h1>
+            <p>@{{ user.username }}</p>
+          </div>
+        </div>
+
+        <button 
+          mat-raised-button 
+          [color]="editMode ? 'warn' : 'primary'"
+          (click)="toggleEditMode()">
+          <mat-icon>{{ editMode ? 'close' : 'edit' }}</mat-icon>
+          {{ editMode ? 'Cancel' : 'Edit Profile' }}
+        </button>
+      </div>
+    </mat-card>
+
+    <!-- Profile Form -->
+    <mat-card class="profile-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>person</mat-icon>
+        <mat-card-title>Profile Information</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <form [formGroup]="profileForm" (ngSubmit)="updateProfile()">
+          
+          <!-- Name -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Full Name</mat-label>
+            <input matInput formControlName="name">
+            <mat-icon matSuffix>person</mat-icon>
+            <mat-error *ngIf="profileForm.get('name')?.hasError('required')">
+              Name is required
+            </mat-error>
+            <mat-error *ngIf="profileForm.get('name')?.hasError('minlength')">
+              Name must be at least 2 characters
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Email -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Email</mat-label>
+            <input matInput formControlName="email" type="email">
+            <mat-icon matSuffix>email</mat-icon>
+            <mat-error *ngIf="profileForm.get('email')?.hasError('required')">
+              Email is required
+            </mat-error>
+            <mat-error *ngIf="profileForm.get('email')?.hasError('email')">
+              Please enter a valid email
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Phone -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Phone Number</mat-label>
+            <input matInput formControlName="phone" type="tel">
+            <mat-icon matSuffix>phone</mat-icon>
+          </mat-form-field>
+
+          <!-- Department -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Department</mat-label>
+            <input matInput formControlName="department">
+            <mat-icon matSuffix>business</mat-icon>
+          </mat-form-field>
+
+          <!-- Save Button -->
+          <button 
+            *ngIf="editMode"
+            type="submit" 
+            mat-raised-button 
+            color="primary"
+            [disabled]="profileForm.invalid || updating"
+            class="save-btn">
+            <mat-spinner *ngIf="updating" diameter="20"></mat-spinner>
+            <mat-icon *ngIf="!updating">save</mat-icon>
+            {{ updating ? 'Saving...' : 'Save Changes' }}
+          </button>
+        </form>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Account Info -->
+    <mat-card class="info-card">
+      <mat-card-header>
+        <mat-icon mat-card-avatar>info</mat-icon>
+        <mat-card-title>Account Information</mat-card-title>
+      </mat-card-header>
+
+      <mat-card-content>
+        <div class="info-item">
+          <span class="label">User ID</span>
+          <span class="value">{{ user.userId }}</span>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="info-item">
+          <span class="label">Username</span>
+          <span class="value">{{ user.username }}</span>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="info-item">
+          <span class="label">Role</span>
+          <span class="value">
+            <mat-chip-set>
+              <mat-chip-option color="primary" selected>{{ user.role }}</mat-chip-option>
+            </mat-chip-set>
+          </span>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="info-item">
+          <span class="label">Account Status</span>
+          <span class="value">
+            <mat-chip-set>
+              <mat-chip-option [color]="user.isActive ? 'primary' : 'warn'" selected>
+                {{ user.isActive ? 'Active' : 'Inactive' }}
+              </mat-chip-option>
+            </mat-chip-set>
+          </span>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="info-item">
+          <span class="label">Member Since</span>
+          <span class="value">{{ formatDate(user.createdAt) }}</span>
+        </div>
+
+        <mat-divider></mat-divider>
+
+        <div class="info-item">
+          <span class="label">Last Login</span>
+          <span class="value">{{ formatDate(user.lastLoginAt) }}</span>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+</div>

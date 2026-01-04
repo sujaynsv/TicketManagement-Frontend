@@ -1,10 +1,10 @@
 export interface Comment {
   commentId: string;
   ticketId: string;
-  userId: string;
-  username: string;
   commentText: string;
   isInternal: boolean;
+  userId: string;
+  username: string;
   createdAt: string;
   updatedAt: string;
 }
