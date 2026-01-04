@@ -6,6 +6,8 @@ import { authGuard } from './guards/auth-guard';
 import { CreateTicketComponent } from './components/user/create-ticket/create-ticket.component';
 import { TicketDetailComponent } from './components/user/ticket-detail/ticket-detail.component';
 import { ProfileComponent } from './components/user/profile/profile.component';
+import { AgentDashboardComponent } from './components/agent/dashboard/dashboard.component';  // ← ADD THIS
+
 
 export const routes: Routes = [
     {
@@ -48,7 +50,36 @@ export const routes: Routes = [
                 loadComponent: () => TicketDetailComponent
             },
             {
-                path:'profile', component: ProfileComponent
+                path: 'profile', 
+                component: ProfileComponent
+            }
+        ]
+    },
+    
+    // ============================================
+    // AGENT ROUTES (SUPPORT_AGENT role)
+    // ============================================
+    {
+        path: 'agent',
+        canActivate: [authGuard],
+        data: { roles: ['SUPPORT_AGENT'] },
+        children: [
+            // Agent Dashboard
+            {
+                path: 'dashboard',
+                component: AgentDashboardComponent
+            },
+            
+            // View/Work on ticket (agents use same detail component for now)
+            {
+                path: 'tickets/:ticketId',
+                loadComponent: () => TicketDetailComponent
+            },
+            
+            // Agent Profile
+            {
+                path: 'profile',
+                component: ProfileComponent
             }
         ]
     },

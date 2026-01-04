@@ -1,0 +1,490 @@
+.agent-dashboard-container {
+  padding: 24px;
+  max-width: 1400px;
+  margin: 0 auto;
+  background: #f5f5f5;
+  min-height: 100vh;
+
+  // Header Card
+  .header-card {
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+
+    .header-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+
+      .header-left {
+        h1 {
+          margin: 0 0 8px 0;
+          font-size: 28px;
+          font-weight: 600;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+
+          mat-icon {
+            font-size: 32px;
+            width: 32px;
+            height: 32px;
+          }
+        }
+
+        .welcome-text {
+          margin: 0;
+          opacity: 0.9;
+          font-size: 14px;
+        }
+      }
+
+      .header-right {
+        display: flex;
+        gap: 12px;
+
+        button {
+          mat-icon {
+            margin-right: 4px;
+          }
+        }
+      }
+    }
+  }
+
+  // Statistics Cards
+  .stats-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-bottom: 24px;
+
+    .stat-card {
+      cursor: default;
+      transition: transform 0.2s, box-shadow 0.2s;
+
+      &:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      }
+
+      .stat-content {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+
+        .stat-icon {
+          font-size: 48px;
+          width: 48px;
+          height: 48px;
+          border-radius: 50%;
+          padding: 12px;
+
+          &.total {
+            background: rgba(103, 126, 234, 0.1);
+            color: #667eea;
+          }
+
+          &.pending {
+            background: rgba(255, 152, 0, 0.1);
+            color: #ff9800;
+          }
+
+          &.progress {
+            background: rgba(244, 67, 54, 0.1);
+            color: #f44336;
+          }
+
+          &.resolved {
+            background: rgba(76, 175, 80, 0.1);
+            color: #4caf50;
+          }
+        }
+
+        .stat-details {
+          h3 {
+            margin: 0 0 4px 0;
+            font-size: 32px;
+            font-weight: 700;
+            color: #333;
+          }
+
+          p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+          }
+        }
+      }
+    }
+  }
+
+  // Loading Container
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 48px;
+    gap: 16px;
+
+    p {
+      margin: 0;
+      color: #666;
+    }
+  }
+
+  // Main Content Card
+  .content-card {
+    margin-bottom: 24px;
+
+    ::ng-deep .mat-mdc-tab-labels {
+      gap: 8px;
+    }
+
+    .tab-icon {
+      margin-right: 8px;
+    }
+
+    .tab-badge {
+      margin-left: 8px;
+      background: #667eea;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+
+      &.warning {
+        background: #f44336;
+      }
+    }
+
+    // Tab Content
+    .tab-content {
+      padding: 24px;
+
+      // Filter Section
+      .filter-section {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 24px;
+        align-items: center;
+        flex-wrap: wrap;
+
+        mat-form-field {
+          flex: 1;
+          min-width: 200px;
+          max-width: 300px;
+        }
+
+        button mat-icon {
+          margin-right: 8px;
+        }
+      }
+
+      // Empty State
+      .empty-state {
+        text-align: center;
+        padding: 64px 24px;
+        color: #999;
+
+        mat-icon {
+          font-size: 64px;
+          width: 64px;
+          height: 64px;
+          margin-bottom: 16px;
+          opacity: 0.5;
+        }
+
+        h3 {
+          margin: 0 0 8px 0;
+          font-size: 24px;
+          color: #666;
+        }
+
+        p {
+          margin: 0;
+          font-size: 14px;
+        }
+      }
+
+      // Assignments Grid
+      .assignments-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+
+        .assignment-card {
+          cursor: pointer;
+          transition: transform 0.2s, box-shadow 0.2s;
+          display: flex;
+          flex-direction: column;
+
+          &:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 6px 24px rgba(0, 0, 0, 0.15);
+          }
+
+          mat-card-header {
+            padding-bottom: 16px;
+
+            .card-header-content {
+              width: 100%;
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+              gap: 12px;
+
+              .ticket-number {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 600;
+                font-size: 16px;
+                color: #667eea;
+
+                mat-icon {
+                  font-size: 20px;
+                  width: 20px;
+                  height: 20px;
+                }
+              }
+
+              .card-badges {
+                mat-chip-set {
+                  display: flex;
+                  gap: 8px;
+                }
+              }
+            }
+          }
+
+          mat-card-content {
+            flex: 1;
+            padding: 16px 0;
+
+            .ticket-title {
+              margin: 0 0 12px 0;
+              font-size: 18px;
+              font-weight: 600;
+              color: #333;
+              line-height: 1.4;
+            }
+
+            .ticket-description {
+              margin: 0 0 16px 0;
+              font-size: 14px;
+              color: #666;
+              line-height: 1.6;
+              display: -webkit-box;
+              -webkit-line-clamp: 2;
+              -webkit-box-orient: vertical;
+              overflow: hidden;
+            }
+
+            .ticket-meta {
+              display: flex;
+              flex-direction: column;
+              gap: 8px;
+              margin-bottom: 12px;
+
+              .meta-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 13px;
+                color: #666;
+
+                mat-icon {
+                  font-size: 18px;
+                  width: 18px;
+                  height: 18px;
+                  color: #999;
+                }
+              }
+            }
+
+            .ticket-counts {
+              display: flex;
+              gap: 16px;
+              margin-bottom: 12px;
+
+              .count-item {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                font-size: 13px;
+                color: #666;
+
+                mat-icon {
+                  font-size: 16px;
+                  width: 16px;
+                  height: 16px;
+                }
+              }
+            }
+
+            .assignment-status {
+              margin-top: 12px;
+
+              mat-chip {
+                mat-icon {
+                  margin-right: 4px;
+                  font-size: 18px;
+                  width: 18px;
+                  height: 18px;
+                }
+              }
+            }
+          }
+
+          mat-card-actions {
+            display: flex;
+            gap: 12px;
+            padding: 16px 0 0 0;
+            border-top: 1px solid #eee;
+
+            button {
+              flex: 1;
+
+              mat-icon {
+                margin-right: 4px;
+              }
+            }
+          }
+        }
+      }
+
+      // SLA Warnings List
+      .sla-warnings-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+
+        .sla-warning-card {
+          cursor: pointer;
+          transition: transform 0.2s, box-shadow 0.2s;
+          border-left: 4px solid #f44336;
+
+          &:hover {
+            transform: translateX(4px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+          }
+
+          mat-card-header {
+            .sla-header {
+              width: 100%;
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+              gap: 12px;
+
+              .ticket-number {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-weight: 600;
+                font-size: 16px;
+                color: #667eea;
+
+                mat-icon {
+                  font-size: 20px;
+                  width: 20px;
+                  height: 20px;
+                }
+              }
+
+              mat-chip {
+                mat-icon {
+                  margin-right: 4px;
+                  font-size: 18px;
+                  width: 18px;
+                  height: 18px;
+                }
+              }
+            }
+          }
+
+          mat-card-content {
+            .ticket-title {
+              margin: 0 0 16px 0;
+              font-size: 18px;
+              font-weight: 600;
+              color: #333;
+            }
+
+            .sla-meta {
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+              gap: 12px;
+              margin-bottom: 16px;
+
+              .meta-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                font-size: 13px;
+                color: #666;
+
+                mat-icon {
+                  font-size: 18px;
+                  width: 18px;
+                  height: 18px;
+                  color: #999;
+                }
+              }
+            }
+
+            .sla-status {
+              margin-top: 12px;
+            }
+          }
+
+          mat-card-actions {
+            padding-top: 16px;
+            border-top: 1px solid #eee;
+
+            button mat-icon {
+              margin-right: 4px;
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .agent-dashboard-container {
+    padding: 16px;
+
+    .header-card .header-content {
+      flex-direction: column;
+      align-items: flex-start;
+
+      .header-right {
+        width: 100%;
+
+        button {
+          flex: 1;
+        }
+      }
+    }
+
+    .stats-container {
+      grid-template-columns: 1fr;
+    }
+
+    .content-card .tab-content {
+      padding: 16px;
+
+      .assignments-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  }
+}

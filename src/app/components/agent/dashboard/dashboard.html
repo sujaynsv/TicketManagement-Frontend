@@ -1,0 +1,286 @@
+<div class="agent-dashboard-container">
+  <!-- Header -->
+  <mat-card class="header-card">
+    <mat-card-content>
+      <div class="header-content">
+        <div class="header-left">
+          <h1>
+            <mat-icon>support_agent</mat-icon>
+            Agent Dashboard
+          </h1>
+          <p class="welcome-text">Welcome back, {{ username }}!</p>
+        </div>
+        
+        <div class="header-right">
+          <button mat-raised-button color="primary" routerLink="/agent/profile">
+            <mat-icon>person</mat-icon>
+            Profile
+          </button>
+          <button mat-raised-button color="warn" (click)="logout()">
+            <mat-icon>logout</mat-icon>
+            Logout
+          </button>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Statistics Cards -->
+  <div class="stats-container" *ngIf="!loadingStats && stats">
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-content">
+          <mat-icon class="stat-icon total">assignment</mat-icon>
+          <div class="stat-details">
+            <h3>{{ stats.totalAssigned }}</h3>
+            <p>Total Assigned</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-content">
+          <mat-icon class="stat-icon pending">pending_actions</mat-icon>
+          <div class="stat-details">
+            <h3>{{ stats.pending }}</h3>
+            <p>Assigned</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-content">
+          <mat-icon class="stat-icon progress">hourglass_empty</mat-icon>
+          <div class="stat-details">
+            <h3>{{ stats.inProgress }}</h3>
+            <p>In Progress</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <mat-card-content>
+        <div class="stat-content">
+          <mat-icon class="stat-icon resolved">check_circle</mat-icon>
+          <div class="stat-details">
+            <h3>{{ stats.resolved }}</h3>
+            <p>Resolved</p>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Stats Loading -->
+  <div class="loading-container" *ngIf="loadingStats">
+    <mat-spinner diameter="40"></mat-spinner>
+    <p>Loading statistics...</p>
+  </div>
+
+  <!-- Main Content with Tabs -->
+  <mat-card class="content-card">
+    <mat-tab-group [(selectedIndex)]="selectedTab" animationDuration="300ms">
+      
+      <!-- Tab 1: My Assignments -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">assignment_ind</mat-icon>
+          My Assignments
+          <span class="tab-badge" *ngIf="filteredAssignments.length > 0">
+            {{ filteredAssignments.length }}
+          </span>
+        </ng-template>
+
+        <div class="tab-content">
+          <!-- Filter Section -->
+          <div class="filter-section">
+            <mat-form-field appearance="outline">
+              <mat-label>Filter by Status</mat-label>
+              <mat-select [(value)]="filterStatus" (selectionChange)="onFilterChange()">
+                <mat-option *ngFor="let option of statusOptions" [value]="option.value">
+                  {{ option.label }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <button mat-raised-button color="primary" (click)="loadAssignments()">
+              <mat-icon>refresh</mat-icon>
+              Refresh
+            </button>
+          </div>
+
+          <!-- Loading State -->
+          <div class="loading-container" *ngIf="loading">
+            <mat-spinner diameter="50"></mat-spinner>
+            <p>Loading assignments...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-state" *ngIf="!loading && filteredAssignments.length === 0">
+            <mat-icon>assignment</mat-icon>
+            <h3>No assignments found</h3>
+            <p *ngIf="filterStatus === 'ALL'">You don't have any ticket assignments yet.</p>
+            <p *ngIf="filterStatus !== 'ALL'">No tickets match the selected filter.</p>
+          </div>
+
+          <!-- Assignments List -->
+          <div class="assignments-grid" *ngIf="!loading && filteredAssignments.length > 0">
+            <mat-card 
+              class="assignment-card" 
+              *ngFor="let assignment of filteredAssignments"
+              (click)="viewTicket(assignment.ticketId)"
+            >
+              <mat-card-header>
+                <div class="card-header-content">
+                  <div class="ticket-number">
+                    <mat-icon>confirmation_number</mat-icon>
+                    {{ assignment.ticketNumber }}
+                  </div>
+                  
+                  <div class="card-badges">
+                    <mat-chip-set>
+                      <mat-chip [color]="getPriorityColor(assignment.ticketPriority)" highlighted>
+                        {{ assignment.ticketPriority }}
+                      </mat-chip>
+                      <mat-chip [color]="getStatusColor(assignment.ticketStatus)" highlighted>
+                        {{ assignment.ticketStatus }}
+                      </mat-chip>
+                    </mat-chip-set>
+                  </div>
+                </div>
+              </mat-card-header>
+
+              <mat-card-content>
+                <h3 class="ticket-title">{{ assignment.title }}</h3>
+                <p class="ticket-description">{{ assignment.description }}</p>
+
+                <div class="ticket-meta">
+                  <div class="meta-item">
+                    <mat-icon>category</mat-icon>
+                    <span>{{ assignment.ticketCategory }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <mat-icon>person</mat-icon>
+                    <span>{{ assignment.createdByUsername }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <mat-icon>schedule</mat-icon>
+                    <span>{{ formatDate(assignment.assignedAt) }}</span>
+                  </div>
+                </div>
+
+                <div class="ticket-counts" *ngIf="assignment.commentCount || assignment.attachementCount">
+                  <span class="count-item" *ngIf="assignment.commentCount">
+                    <mat-icon>comment</mat-icon>
+                    {{ assignment.commentCount }}
+                  </span>
+                  <span class="count-item" *ngIf="assignment.attachementCount">
+                    <mat-icon>attach_file</mat-icon>
+                    {{ assignment.attachementCount }}
+                  </span>
+                </div>
+              </mat-card-content>
+
+              <mat-card-actions>
+                <button mat-raised-button color="primary">
+                  <mat-icon>visibility</mat-icon>
+                  View Details
+                </button>
+              </mat-card-actions>
+            </mat-card>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Tab 2: SLA Warnings -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">warning</mat-icon>
+          SLA Warnings
+          <span class="tab-badge warning" *ngIf="slaWarnings.length > 0">
+            {{ slaWarnings.length }}
+          </span>
+        </ng-template>
+
+        <div class="tab-content">
+          <!-- Loading State -->
+          <div class="loading-container" *ngIf="loadingSLA">
+            <mat-spinner diameter="50"></mat-spinner>
+            <p>Loading SLA warnings...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-state" *ngIf="!loadingSLA && slaWarnings.length === 0">
+            <mat-icon>check_circle</mat-icon>
+            <h3>All Clear!</h3>
+            <p>No SLA warnings at this time.</p>
+          </div>
+
+          <!-- SLA Warnings List -->
+          <div class="sla-warnings-list" *ngIf="!loadingSLA && slaWarnings.length > 0">
+            <mat-card 
+              class="sla-warning-card" 
+              *ngFor="let warning of slaWarnings"
+              (click)="viewTicket(warning.ticketId)"
+            >
+              <mat-card-header>
+                <div class="sla-header">
+                  <div class="ticket-number">
+                    <mat-icon>confirmation_number</mat-icon>
+                    {{ warning.ticketNumber }}
+                  </div>
+                  
+                  <mat-chip [color]="getSLAColor(warning.timeRemaining)" highlighted>
+                    <mat-icon>schedule</mat-icon>
+                    {{ formatTimeRemaining(warning.timeRemaining) }}
+                  </mat-chip>
+                </div>
+              </mat-card-header>
+
+              <mat-card-content>
+                <h3 class="ticket-title">{{ warning.ticketTitle }}</h3>
+                
+                <div class="sla-meta">
+                  <div class="meta-item">
+                    <mat-icon>priority_high</mat-icon>
+                    <span>Priority: {{ warning.priority }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <mat-icon>person</mat-icon>
+                    <span>Assigned to: {{ warning.assignedTo }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <mat-icon>event</mat-icon>
+                    <span>Created: {{ formatDate(warning.createdAt) }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <mat-icon>alarm</mat-icon>
+                    <span>SLA Deadline: {{ formatDate(warning.slaDeadline) }}</span>
+                  </div>
+                </div>
+
+                <div class="sla-status">
+                  <mat-chip [color]="getStatusColor(warning.status)" highlighted>
+                    {{ warning.status }}
+                  </mat-chip>
+                </div>
+              </mat-card-content>
+
+              <mat-card-actions>
+                <button mat-raised-button color="warn">
+                  <mat-icon>trending_up</mat-icon>
+                  View Ticket
+                </button>
+              </mat-card-actions>
+            </mat-card>
+          </div>
+        </div>
+      </mat-tab>
+    </mat-tab-group>
+  </mat-card>
+</div>
