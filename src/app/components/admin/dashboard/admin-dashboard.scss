@@ -1,506 +1,649 @@
+/* ==================== ADMIN DASHBOARD STYLES ==================== */
+
 .admin-dashboard {
-  background: #f5f5f5;
-  min-height: 100vh;
   padding: 24px;
+  background-color: var(--color-background);
+  min-height: 100vh;
+}
 
-  // ==================== HEADER ====================
-  .dashboard-header {
-    margin-bottom: 32px;
+/* ==================== HEADER ==================== */
 
-    h1 {
-      margin: 0 0 8px 0;
-      font-size: 32px;
-      font-weight: 600;
-      color: #333;
-    }
+.dashboard-header {
+  margin-bottom: 32px;
 
-    .subtitle {
-      margin: 0;
-      color: #999;
-      font-size: 14px;
-    }
+  h1 {
+    margin: 0 0 8px 0;
+    font-size: 32px;
+    font-weight: 700;
+    color: var(--color-text);
   }
 
-  // ==================== ERROR BANNER ====================
-  .error-banner {
-    background: #ffebee;
-    border-left: 4px solid #c62828;
-    padding: 16px;
-    border-radius: 4px;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    color: #c62828;
+  .subtitle {
+    margin: 0;
+    font-size: 14px;
+    color: var(--color-text-secondary);
+  }
+}
 
-    mat-icon {
-      flex-shrink: 0;
-    }
+/* ==================== ANALYTICS BUTTON ==================== */
 
-    button {
-      margin-left: auto;
-    }
+.admin-dashboard > button[mat-button] {
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background-color: var(--color-primary);
+  color: white;
+  border-radius: 4px;
+  font-weight: 600;
+
+  &:hover {
+    background-color: var(--color-primary-hover);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   }
 
-  // ==================== STATS SECTION ====================
-  .stats-section {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px;
-    margin-bottom: 32px;
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+}
 
-    .stat-card {
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
+/* ==================== ERROR BANNER ==================== */
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  margin-bottom: 24px;
+  background-color: rgba(244, 67, 54, 0.1);
+  border: 1px solid #f44336;
+  border-radius: 6px;
+  color: #f44336;
+
+  mat-icon {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  button {
+    margin-left: auto;
+  }
+}
+
+/* ==================== STATS SECTION ==================== */
+
+.stats-section {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.stat-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+  }
+
+  &.breached {
+    border-color: #f44336;
+    background: rgba(244, 67, 54, 0.05);
+  }
+}
+
+.stat-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  color: white;
+  font-size: 28px;
+  flex-shrink: 0;
+
+  &.users-icon {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
+
+  &.agents-icon {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  }
+
+  &.managers-icon {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  }
+
+  &.tickets-icon {
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+  }
+
+  &.open-icon {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  }
+
+  &.breached-icon {
+    background: linear-gradient(135deg, #f83600 0%, #fe8c00 100%);
+  }
+
+  mat-icon {
+    color: white;
+  }
+}
+
+.stat-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  h3 {
+    margin: 0;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--color-text);
+  }
+
+  p {
+    margin: 0;
+    font-size: 13px;
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+  }
+}
+
+/* ==================== LOADING CONTAINER ==================== */
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  min-height: 300px;
+}
+
+/* ==================== TABS ==================== */
+
+.admin-tabs {
+  margin-bottom: 24px;
+
+  ::ng-deep {
+    .mat-mdc-tab-header {
+      background-color: var(--color-surface);
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .mat-mdc-tab {
+      min-width: 120px;
+    }
+
+    .mdc-tab__text-label {
       display: flex;
       align-items: center;
-      gap: 16px;
-      transition: all 0.3s ease;
-      cursor: pointer;
-
-      &:hover {
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        transform: translateY(-2px);
-      }
-
-      .stat-icon {
-        width: 60px;
-        height: 60px;
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
-
-        mat-icon {
-          font-size: 32px;
-          width: 32px;
-          height: 32px;
-          color: white;
-        }
-
-        &.users-icon {
-          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        }
-
-        &.agents-icon {
-          background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-        }
-
-        &.managers-icon {
-          background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-        }
-
-        &.tickets-icon {
-          background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
-        }
-
-        &.open-icon {
-          background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
-        }
-
-        &.breached-icon {
-          background: linear-gradient(135deg, #ff9a56 0%, #ff6a88 100%);
-        }
-      }
-
-      .stat-content {
-        h3 {
-          margin: 0 0 4px 0;
-          font-size: 24px;
-          font-weight: 700;
-          color: #333;
-        }
-
-        p {
-          margin: 0;
-          font-size: 12px;
-          color: #999;
-          text-transform: uppercase;
-          letter-spacing: 0.5px;
-        }
-      }
-
-      &.breached {
-        .stat-icon {
-          background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
-        }
-      }
-    }
-  }
-
-  // ==================== LOADING ====================
-  .loading-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 60px 20px;
-  }
-
-  // ==================== TABS ====================
-  .admin-tabs {
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-
-    ::ng-deep {
-      .mat-mdc-tab-labels {
-        border-bottom: 1px solid #e0e0e0;
-      }
-
-      .mat-mdc-tab {
-        min-width: 120px;
-
-        .tab-icon {
-          margin-right: 8px;
-        }
-      }
-
-      .mat-mdc-tab-header-pagination-chevron {
-        border-color: #2196f3;
-      }
-    }
-
-    .tab-content {
-      padding: 24px;
-      animation: fadeIn 0.3s ease-in;
-
-      @keyframes fadeIn {
-        from {
-          opacity: 0;
-        }
-        to {
-          opacity: 1;
-        }
-      }
-
-      // TABLE HEADER
-      .table-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-        flex-wrap: wrap;
-        gap: 16px;
-
-        h2 {
-          margin: 0;
-          font-size: 18px;
-          font-weight: 600;
-          color: #333;
-        }
-
-        .search-field {
-          width: 250px;
-        }
-
-        .filter-field {
-          width: 200px;
-        }
-
-        .info-badge {
-          background: #e3f2fd;
-          color: #1976d2;
-          padding: 6px 12px;
-          border-radius: 20px;
-          font-size: 12px;
-          font-weight: 600;
-        }
-
-        button {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-        }
-      }
-
-      // TABLE
-      .table-wrapper {
-        overflow-x: auto;
-        background: white;
-        border-radius: 6px;
-        border: 1px solid #e0e0e0;
-
-        .data-table {
-          width: 100%;
-          border-collapse: collapse;
-
-          th {
-            background: #fafafa;
-            padding: 16px;
-            text-align: left;
-            font-weight: 600;
-            font-size: 12px;
-            color: #666;
-            border-bottom: 1px solid #e0e0e0;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-
-            &[mat-sort-header]:hover {
-              background: #f0f0f0;
-            }
-          }
-
-          td {
-            padding: 16px;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
-            color: #333;
-
-            &:first-child {
-              font-weight: 500;
-            }
-          }
-
-          tr:hover {
-            background: #fafafa;
-          }
-
-          .ticket-number {
-            font-weight: 600;
-            color: #2196f3;
-            font-family: 'Courier New', monospace;
-          }
-
-          mat-chip {
-            color: white;
-            font-size: 12px;
-            height: 28px;
-            line-height: 28px;
-
-            &.status-active {
-              background: #4caf50;
-            }
-
-            &.status-inactive {
-              background: #f44336;
-            }
-
-            &.agent-status {
-              min-width: 80px;
-              text-align: center;
-            }
-          }
-
-          .badge {
-            display: inline-block;
-            padding: 4px 12px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 600;
-            text-align: center;
-            min-width: 40px;
-
-            &.badge-assigned {
-              background: #e3f2fd;
-              color: #1976d2;
-            }
-
-            &.badge-resolved {
-              background: #e8f5e9;
-              color: #388e3c;
-            }
-          }
-
-          .text-muted {
-            color: #999;
-          }
-
-          .agent-select {
-            width: 150px;
-
-            mat-select {
-              font-size: 14px;
-            }
-          }
-        }
-
-        ::ng-deep {
-          .mat-mdc-paginator {
-            background: #fafafa;
-            border-top: 1px solid #e0e0e0;
-          }
-        }
-      }
-
-      // SLA SECTION
-      .sla-container {
-        display: flex;
-        flex-direction: column;
-        gap: 20px;
-
-        .sla-section {
-          background: white;
-          border-radius: 6px;
-          border: 1px solid #e0e0e0;
-
-          mat-card-header {
-            padding: 16px;
-            border-bottom: 1px solid #e0e0e0;
-
-            mat-card-title {
-              display: flex;
-              align-items: center;
-              gap: 12px;
-              font-size: 16px;
-              margin: 0;
-
-              mat-icon {
-                color: #2196f3;
-              }
-            }
-          }
-
-          mat-card-content {
-            padding: 16px;
-
-            .sla-list {
-              display: flex;
-              flex-direction: column;
-              gap: 12px;
-
-              .sla-item {
-                display: flex;
-                align-items: center;
-                gap: 12px;
-                padding: 12px;
-                background: #fafafa;
-                border-radius: 4px;
-                border: 1px solid #e0e0e0;
-
-                .sla-info {
-                  flex: 1;
-                  display: flex;
-                  gap: 16px;
-                  align-items: center;
-
-                  .sla-id {
-                    font-weight: 600;
-                    color: #333;
-                    min-width: 80px;
-                  }
-
-                  .sla-ticket {
-                    color: #666;
-                    font-size: 13px;
-                  }
-                }
-
-                .sla-progress {
-                  width: 150px;
-                  height: 4px;
-                  border-radius: 2px;
-                  background: #e0e0e0;
-
-                  ::ng-deep {
-                    .mat-progress-bar-fill::after {
-                      background: linear-gradient(90deg, #4caf50, #81c784);
-                    }
-                  }
-                }
-
-                &.warning {
-                  background: #fff3e0;
-                  border-color: #ffe0b2;
-
-                  mat-icon {
-                    color: #ff9800;
-                  }
-                }
-              }
-            }
-
-            .empty-state {
-              text-align: center;
-              padding: 40px 20px;
-              color: #999;
-              font-size: 14px;
-            }
-          }
-
-          &.breached-section {
-            mat-card-header {
-              mat-card-title {
-                mat-icon {
-                  color: #f44336;
-                }
-              }
-            }
-          }
-        }
-      }
+      gap: 8px;
+      font-weight: 500;
     }
   }
 }
 
-// ==================== RESPONSIVE ====================
+.tab-icon {
+  margin-right: 4px;
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+}
+
+.tab-content {
+  padding: 24px 0;
+}
+
+/* ==================== TABLE HEADER ==================== */
+
+.table-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 16px;
+
+  h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+}
+
+.info-badge {
+  padding: 6px 12px;
+  background-color: var(--color-secondary);
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.search-field,
+.filter-field {
+  width: 100%;
+  max-width: 300px;
+}
+
+/* ==================== TABLE WRAPPER ==================== */
+
+.table-wrapper {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: auto;
+}
+
+.data-table {
+  width: 100%;
+  background-color: var(--color-surface);
+
+  thead {
+    background-color: var(--color-secondary);
+  }
+
+  th {
+    background-color: var(--color-secondary);
+    color: var(--color-text);
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 12px;
+    text-align: left;
+    border-bottom: 2px solid var(--color-border);
+  }
+
+  td {
+    padding: 14px 12px;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+    font-size: 13px;
+  }
+
+  tr {
+    transition: background-color 0.2s ease;
+
+    &:hover {
+      background-color: var(--color-secondary);
+    }
+
+    &:last-child td {
+      border-bottom: none;
+    }
+  }
+}
+
+/* ==================== BADGES & CHIPS ==================== */
+
+mat-chip {
+  color: white;
+  font-weight: 600;
+  font-size: 11px;
+  min-height: 24px;
+  padding: 0 8px !important;
+
+  &.status-active {
+    background-color: #4caf50 !important;
+    color: white;
+  }
+
+  &.status-inactive {
+    background-color: #9e9e9e !important;
+    color: white;
+  }
+
+  &.agent-status {
+    min-height: 28px;
+    padding: 0 12px !important;
+  }
+}
+
+.badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: white;
+
+  &.badge-assigned {
+    background-color: #2196f3;
+  }
+
+  &.badge-resolved {
+    background-color: #4caf50;
+  }
+}
+
+.ticket-number {
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.text-muted {
+  color: var(--color-text-secondary);
+}
+
+/* ==================== SLA SECTION ==================== */
+
+.sla-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 24px;
+}
+
+.sla-section {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+
+  mat-card-header {
+    border-bottom: 1px solid var(--color-border);
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+  }
+
+  mat-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  &.breached-section {
+    border-color: #f44336;
+    background: rgba(244, 67, 54, 0.02);
+
+    mat-card-title {
+      color: #f44336;
+    }
+  }
+}
+
+.sla-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sla-item {
+  padding: 12px;
+  background-color: var(--color-secondary);
+  border-radius: 6px;
+  border-left: 4px solid var(--color-primary);
+}
+
+.sla-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  .sla-id {
+    font-weight: 600;
+    color: var(--color-text);
+  }
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--color-text-secondary);
+  padding: 24px;
+  font-size: 14px;
+}
+
+/* ==================== AGENT SELECT ==================== */
+
+.agent-select {
+  width: 100%;
+  max-width: 200px;
+}
+
+/* ==================== PAGINATION ==================== */
+
+mat-paginator {
+  background-color: var(--color-secondary);
+  border-top: 1px solid var(--color-border);
+}
+
+/* ==================== BUTTONS ==================== */
+
+button[mat-button],
+button[mat-raised-button] {
+  transition: all 0.3s ease;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+button[mat-icon-button] {
+  color: var(--color-primary);
+
+  &:hover {
+    background-color: var(--color-secondary);
+  }
+}
+
+/* ==================== RESPONSIVE DESIGN ==================== */
+
+@media (max-width: 1024px) {
+  .stats-section {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 12px;
+  }
+
+  .stat-card {
+    padding: 16px;
+  }
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+  }
+
+  .stat-content h3 {
+    font-size: 24px;
+  }
+
+  .sla-container {
+    grid-template-columns: 1fr;
+  }
+
+  .table-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-field,
+  .filter-field {
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 768px) {
   .admin-dashboard {
     padding: 16px;
+  }
 
-    .dashboard-header h1 {
-      font-size: 24px;
+  .stats-section {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .stat-card {
+    flex-direction: column;
+    text-align: center;
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .stat-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 22px;
+  }
+
+  .stat-content h3 {
+    font-size: 20px;
+  }
+
+  .stat-content p {
+    font-size: 11px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 24px;
+  }
+
+  .dashboard-header .subtitle {
+    font-size: 12px;
+  }
+
+  .table-header h2 {
+    font-size: 16px;
+  }
+
+  .data-table {
+    font-size: 12px;
+
+    th,
+    td {
+      padding: 10px 8px;
     }
+  }
 
-    .stats-section {
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 12px;
-    }
+  .agent-select {
+    max-width: 150px;
+  }
 
-    .admin-tabs {
-      .tab-content {
-        padding: 16px;
-
-        .table-header {
-          flex-direction: column;
-          align-items: flex-start;
-
-          .search-field,
-          .filter-field {
-            width: 100%;
-          }
-        }
-
-        .table-wrapper {
-          overflow-x: auto;
-
-          .data-table {
-            th,
-            td {
-              padding: 12px 8px;
-              font-size: 12px;
-            }
-          }
-        }
-      }
-    }
+  ::ng-deep .mat-mdc-paginator-container {
+    padding: 8px 16px;
   }
 }
 
 @media (max-width: 480px) {
   .admin-dashboard {
     padding: 12px;
+  }
 
-    .stats-section {
-      grid-template-columns: 1fr;
+  .stats-section {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .stat-card {
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .stat-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .stat-content h3 {
+    font-size: 18px;
+  }
+
+  .dashboard-header h1 {
+    font-size: 20px;
+    margin-bottom: 4px;
+  }
+
+  .admin-tabs ::ng-deep .mat-mdc-tab {
+    min-width: 80px;
+    font-size: 11px;
+  }
+
+  .tab-content {
+    padding: 16px 0;
+  }
+
+  .data-table {
+    font-size: 11px;
+
+    th,
+    td {
+      padding: 8px 6px;
     }
+  }
 
-    .admin-tabs {
-      .tab-content {
-        padding: 12px;
+  .search-field,
+  .filter-field,
+  .agent-select {
+    max-width: 100% !important;
+  }
 
-        .table-wrapper {
-          .data-table {
-            th,
-            td {
-              padding: 8px 4px;
-              font-size: 11px;
-            }
-          }
-        }
-      }
+  .table-header {
+    gap: 8px;
+  }
+
+  .info-badge {
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+}
+
+/* ==================== MATERIAL OVERRIDES ==================== */
+
+::ng-deep {
+  .mat-mdc-form-field {
+    width: 100%;
+  }
+
+  .mat-mdc-select-trigger {
+    font-size: 13px;
+  }
+
+  mat-card {
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+
+    &:hover {
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  .mdc-data-table__header-row {
+    background-color: var(--color-secondary);
+  }
+
+  .mdc-data-table__row {
+    &:hover {
+      background-color: var(--color-secondary);
     }
   }
 }

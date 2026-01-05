@@ -17,6 +17,7 @@ import { AdminService } from '../../../services/admin.service';
 import { finalize } from 'rxjs';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { TicketManagementDialogComponent } from '../dialogs/ticket-management.dialog';
+import { RouterModule } from '@angular/router';
 
 
 @Component({
@@ -26,6 +27,7 @@ import { TicketManagementDialogComponent } from '../dialogs/ticket-management.di
   standalone: true,
   imports: [
     CommonModule,
+    RouterModule,
     DatePipe,
     SlicePipe,
     MatTableModule,

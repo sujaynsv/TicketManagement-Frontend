@@ -11,6 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { AdminService } from '../../../services/admin.service';
 
+
 @Component({
   selector: 'app-analytics',
   standalone: true,
@@ -31,37 +32,62 @@ import { AdminService } from '../../../services/admin.service';
 })
 export class AnalyticsComponent implements OnInit {
   
-  // Loading states
+  // ==================== EXISTING LOADING STATES ====================
   loadingOverview = true;
   loadingTickets = true;
   loadingAgents = true;
   loadingSLA = true;
 
-  // Data
+  // ==================== NEW LOADING STATES ====================
+  loadingCategories = false;
+  loadingTrends = false;
+
+  // ==================== EXISTING DATA ====================
   overview: any = {};
   ticketAnalytics: any = {};
   agentPerformance: any = {};
   slaReport: any = {};
 
-  // Agent metrics
+  // ==================== NEW DATA ====================
+  categoryBreakdown: any[] = [];
+  trends: any[] = [];
+
+  // ==================== AGENT METRICS ====================
   agentMetrics: any[] = [];
   agentDisplayColumns: string[] = ['username', 'assigned', 'resolved', 'avgResolutionTime', 'slaCompliance'];
 
+  // ==================== TRENDS TABLE COLUMNS ====================
+  trendsColumns: string[] = ['date', 'ticketsCreated', 'ticketsClosed', 'slaBreaches'];
+
+  // ==================== FILTERS ====================
   selectedDays = 7;
   dayOptions = [7, 14, 30];
 
+
   constructor(private adminService: AdminService) {}
+
 
   ngOnInit(): void {
     this.loadAllAnalytics();
   }
 
+
+  /**
+   * Load ALL analytics data
+   */
   loadAllAnalytics(): void {
     this.loadSystemOverview();
     this.loadTicketAnalytics();
     this.loadAgentPerformance();
     this.loadSLAReport();
+    this.loadCategoryBreakdown();  // ✅ NEW
+    this.loadTrends();             // ✅ NEW
   }
+
+
+  // =====================================================
+  // ============ EXISTING METHODS ============
+  // =====================================================
 
   loadSystemOverview(): void {
     this.loadingOverview = true;
@@ -87,6 +113,7 @@ export class AnalyticsComponent implements OnInit {
     });
   }
 
+
   loadTicketAnalytics(): void {
     this.loadingTickets = true;
     this.adminService.getTicketAnalytics(this.selectedDays).subscribe({
@@ -101,6 +128,7 @@ export class AnalyticsComponent implements OnInit {
       }
     });
   }
+
 
   loadAgentPerformance(): void {
     this.loadingAgents = true;
@@ -120,6 +148,7 @@ export class AnalyticsComponent implements OnInit {
     });
   }
 
+
   loadSLAReport(): void {
     this.loadingSLA = true;
     this.adminService.getSlaReport().subscribe({
@@ -135,10 +164,82 @@ export class AnalyticsComponent implements OnInit {
     });
   }
 
+
+  // =====================================================
+  // ============ NEW METHODS ============
+  // =====================================================
+
+  /**
+   * Load category breakdown data
+   */
+  loadCategoryBreakdown(): void {
+    this.loadingCategories = true;
+    this.adminService.getCategoryBreakdown().subscribe({
+      next: (data: any[]) => {
+        this.categoryBreakdown = Array.isArray(data) ? data : [];
+        console.log('Category breakdown loaded:', this.categoryBreakdown);
+        this.loadingCategories = false;
+      },
+      error: (err: any) => {
+        console.error('Failed to load category breakdown:', err);
+        this.categoryBreakdown = [];
+        this.loadingCategories = false;
+      }
+    });
+  }
+
+
+  /**
+   * Load trends data (daily/weekly/monthly)
+   */
+  loadTrends(): void {
+    this.loadingTrends = true;
+    // Load trends for the last 30 days by default, daily period
+    this.adminService.getTrends('daily', 30).subscribe({
+      next: (data: any[]) => {
+        this.trends = Array.isArray(data) ? data : [];
+        console.log('Trends loaded:', this.trends);
+        this.loadingTrends = false;
+      },
+      error: (err: any) => {
+        console.error('Failed to load trends:', err);
+        this.trends = [];
+        this.loadingTrends = false;
+      }
+    });
+  }
+
+
+  // =====================================================
+  // ============ UPDATED FILTER METHOD ============
+  // =====================================================
+
+  /**
+   * Handle days filter change - updates both analytics and trends
+   */
   onDaysChange(days: number): void {
     this.selectedDays = days;
     this.loadTicketAnalytics();
+    
+    // Also reload trends with selected days
+    this.loadingTrends = true;
+    this.adminService.getTrends('daily', days).subscribe({
+      next: (data: any[]) => {
+        this.trends = Array.isArray(data) ? data : [];
+        this.loadingTrends = false;
+      },
+      error: (err: any) => {
+        console.error('Failed to reload trends:', err);
+        this.trends = [];
+        this.loadingTrends = false;
+      }
+    });
   }
+
+
+  // =====================================================
+  // ============ COLOR & FORMATTING METHODS ============
+  // =====================================================
 
   getTicketTrendIcon(trend: number): string {
     if (trend > 0) return 'trending_up';
@@ -146,17 +247,20 @@ export class AnalyticsComponent implements OnInit {
     return 'trending_flat';
   }
 
+
   getTicketTrendColor(trend: number): string {
     if (trend > 0) return '#ff9800';
     if (trend < 0) return '#4caf50';
     return '#757575';
   }
 
+
   getSLAComplianceColor(compliance: number): string {
     if (compliance >= 90) return '#4caf50';
     if (compliance >= 75) return '#ff9800';
     return '#f44336';
   }
+
 
   getStatusColor(status: string): string {
     switch (status) {
@@ -168,6 +272,7 @@ export class AnalyticsComponent implements OnInit {
     }
   }
 
+
   getPriorityColor(priority: string): string {
     switch (priority) {
       case 'CRITICAL': return '#c62828';
@@ -177,4 +282,5 @@ export class AnalyticsComponent implements OnInit {
       default: return '#757575';
     }
   }
+
 }

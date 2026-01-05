@@ -10,7 +10,7 @@ import { AgentDashboardComponent } from './components/agent/dashboard/dashboard.
 import { ManagerDashboardComponent } from './components/manager/dashboard/dashboard.component';
 import { ManagerTicketDetailComponent } from './components/manager/ticket-detail/ticket-detail.component';
 import { AdminDashboardComponent } from './components/admin/dashboard/admin-dashboard.component';
-
+import { AnalyticsComponent } from './components/admin/tabs/analytics.component';
 export const routes: Routes = [
     {
         path: '',
@@ -95,10 +95,20 @@ export const routes: Routes = [
         ]
     },
     {
-        path: 'admin/dashboard',
-        component: AdminDashboardComponent
+  path: 'admin',
+  canActivate: [authGuard],
+  data: { roles: ['ADMIN'] },
+  children: [
+    {
+      path: 'dashboard',
+      component: AdminDashboardComponent
     },
-
+    {
+      path: 'analytics',
+      component: AnalyticsComponent
+    }
+  ]
+},
     // ============================================
     // WILDCARD ROUTE
     // ============================================
