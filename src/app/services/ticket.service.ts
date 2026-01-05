@@ -134,4 +134,18 @@ export class TicketService {
     if (fileType.includes('text')) return 'text_snippet';
     return 'insert_drive_file';
   }
+
+  changeTicketStatus(ticketId: string, newStatus: string): Observable<Ticket> {
+    return this.http.patch<Ticket>(`${this.apiUrl}/${ticketId}/status`, {
+      status: newStatus
+    });
+  }
+
+  // Add this method to TicketService class
+  escalateTicket(ticketId: string, reason: string): Observable<Ticket> {
+    return this.http.post<Ticket>(`${this.apiUrl}/${ticketId}/escalate`, {
+      reason: reason
+    });
+  }
+
 }

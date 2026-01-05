@@ -1,0 +1,38 @@
+<h2 mat-dialog-title>Escalate Ticket</h2>
+
+<mat-dialog-content>
+  <p class="ticket-info">
+    <strong>Ticket:</strong> {{ data.ticketNumber }}<br>
+    <strong>Title:</strong> {{ data.title }}
+  </p>
+
+  <form [formGroup]="escalateForm">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Escalation Reason</mat-label>
+      <textarea 
+        matInput 
+        formControlName="reason" 
+        rows="5"
+        placeholder="Explain why this ticket needs to be escalated to a manager...">
+      </textarea>
+      <mat-error *ngIf="escalateForm.get('reason')?.hasError('required')">
+        Reason is required
+      </mat-error>
+      <mat-error *ngIf="escalateForm.get('reason')?.hasError('minlength')">
+        Reason must be at least 20 characters
+      </mat-error>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button 
+    mat-raised-button 
+    color="warn" 
+    (click)="onEscalate()"
+    [disabled]="escalateForm.invalid">
+    <mat-icon>trending_up</mat-icon>
+    Escalate to Manager
+  </button>
+</mat-dialog-actions>

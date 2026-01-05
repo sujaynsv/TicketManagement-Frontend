@@ -1,0 +1,60 @@
+<mat-card *ngIf="ticket" class="ticket-card">
+
+  <mat-card-title>
+    #{{ ticket.ticketNumber }} — {{ ticket.title }}
+  </mat-card-title>
+
+  <mat-card-subtitle>
+    Created by {{ ticket.createdByUsername }} • {{ formatDate(ticket.createdAt) }}
+  </mat-card-subtitle>
+
+  <mat-divider></mat-divider>
+
+  <mat-card-content>
+    <p>{{ ticket.description }}</p>
+
+    <mat-chip-set>
+      <mat-chip [color]="getStatusColor(ticket.status)" highlighted>
+        {{ ticket.status }}
+      </mat-chip>
+      <mat-chip *ngIf="ticket.priority" [color]="getPriorityColor(ticket.priority)" highlighted>
+        {{ ticket.priority }}
+      </mat-chip>
+      <mat-chip>{{ ticket.category }}</mat-chip>
+    </mat-chip-set>
+
+    <p><strong>Assigned To:</strong> {{ ticket.assignedToUsername || 'Unassigned' }}</p>
+  </mat-card-content>
+
+  <mat-divider></mat-divider>
+
+  <mat-card-actions>
+    <button mat-button color="primary" (click)="changeStatus('IN_PROGRESS')">In Progress</button>
+    <button mat-button color="accent" (click)="changeStatus('RESOLVED')">Resolve</button>
+    <button mat-button color="warn" (click)="deleteTicket()">Delete</button>
+    <button mat-stroked-button (click)="goBack()">Back</button>
+  </mat-card-actions>
+
+</mat-card>
+
+<!-- COMMENTS -->
+<mat-card>
+  <mat-card-title>Internal Comments</mat-card-title>
+
+  <div *ngFor="let c of comments" class="comment">
+    <!-- <p><strong>{{ c.createdByUsername }}</strong></p> -->
+    <p>{{ c.commentText }}</p>
+    <small>{{ formatDate(c.createdAt) }}</small>
+  </div>
+
+  <form [formGroup]="commentForm">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Add internal comment</mat-label>
+      <textarea matInput formControlName="content"></textarea>
+    </mat-form-field>
+
+    <button mat-raised-button color="primary" (click)="addComment()" [disabled]="submittingComment">
+      Add Comment
+    </button>
+  </form>
+</mat-card>

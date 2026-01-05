@@ -4,7 +4,8 @@ export enum TicketStatus {
   IN_PROGRESS = 'IN_PROGRESS',
   RESOLVED = 'RESOLVED',
   CLOSED = 'CLOSED',
-  REOPENED = 'REOPENED'
+  REOPENED = 'REOPENED',
+  ESCALATED= 'ESCALATED'
 }
 
 export enum TicketPriority {

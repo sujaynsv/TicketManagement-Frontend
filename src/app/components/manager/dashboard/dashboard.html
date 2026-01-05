@@ -1,0 +1,191 @@
+<div class="dashboard-container">
+
+  <!-- ================= HEADER ================= -->
+  <mat-card class="header-card">
+    <div class="header-content">
+      <div>
+        <h1>
+          <mat-icon>supervisor_account</mat-icon>
+          Manager Dashboard
+        </h1>
+        <p>Welcome back, {{ username }}</p>
+      </div>
+
+      <button mat-raised-button color="warn" (click)="logout()">
+        <mat-icon>logout</mat-icon>
+        Logout
+      </button>
+    </div>
+  </mat-card>
+
+  <!-- ================= FILTERS ================= -->
+  <mat-card class="filters-card">
+    <mat-form-field appearance="outline">
+      <mat-label>Status</mat-label>
+      <mat-select [(ngModel)]="selectedStatus" (selectionChange)="onFilterChange()">
+        <mat-option *ngFor="let s of statusOptions" [value]="s.value">
+          {{ s.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Search</mat-label>
+      <input matInput [(ngModel)]="searchQuery" (input)="onFilterChange()">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Sort</mat-label>
+      <mat-select [(ngModel)]="sortBy" (selectionChange)="onFilterChange()">
+        <mat-option *ngFor="let s of sortOptions" [value]="s.value">
+          {{ s.label }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+  </mat-card>
+
+  <!-- ================= LOADING ================= -->
+  <div *ngIf="loading" class="loading-container">
+    <mat-spinner></mat-spinner>
+  </div>
+
+  <!-- ================= TABS ================= -->
+  <mat-tab-group *ngIf="!loading">
+
+    <!-- ========= ALL TICKETS ========= -->
+    <mat-tab label="All Tickets">
+      <div *ngIf="filteredTickets.length === 0" class="empty-state">
+        <mat-icon>inbox</mat-icon>
+        <p>No tickets found</p>
+      </div>
+
+      <div class="tickets-grid" *ngIf="filteredTickets.length > 0">
+        <mat-card
+          class="ticket-card"
+          *ngFor="let ticket of filteredTickets"
+          (click)="viewTicket(ticket.ticketId)"
+        >
+          <mat-card-header>
+            <div class="ticket-number">#{{ ticket.ticketNumber }}</div>
+          </mat-card-header>
+
+          <mat-card-content>
+            <h3>{{ ticket.title }}</h3>
+            <p>{{ ticket.description }}</p>
+
+            <mat-chip-set>
+              <mat-chip [color]="getStatusColor(ticket.status)" highlighted>
+                {{ ticket.status }}
+              </mat-chip>
+              <mat-chip *ngIf="ticket.priority"
+                        [color]="getPriorityColor(ticket.priority)"
+                        highlighted>
+                {{ ticket.priority }}
+              </mat-chip>
+              <mat-chip>{{ ticket.category }}</mat-chip>
+            </mat-chip-set>
+          </mat-card-content>
+
+          <mat-card-footer>
+            <span>
+              <mat-icon>person</mat-icon>
+              {{ ticket.assignedToUsername || 'Unassigned' }}
+            </span>
+            <span>
+              <mat-icon>schedule</mat-icon>
+              {{ formatDate(ticket.createdAt) }}
+            </span>
+          </mat-card-footer>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- ========= UNASSIGNED ========= -->
+    <mat-tab label="Unassigned">
+      <div *ngIf="unassignedTickets.length === 0" class="empty-state">
+        <mat-icon>assignment</mat-icon>
+        <p>No unassigned tickets</p>
+      </div>
+
+      <div class="tickets-grid" *ngIf="unassignedTickets.length > 0">
+        <mat-card class="ticket-card" *ngFor="let t of unassignedTickets">
+          <b>#{{ t.ticketNumber }}</b>
+          <p>{{ t.title }}</p>
+
+          <button mat-raised-button color="primary" (click)="assign(t)">
+            <mat-icon>person_add</mat-icon>
+            Assign
+          </button>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- ========= ESCALATED ========= -->
+    <mat-tab label="Escalated">
+      <div *ngIf="escalatedTickets.length === 0" class="empty-state">
+        <mat-icon>trending_up</mat-icon>
+        <p>No escalated tickets</p>
+      </div>
+
+      <div class="tickets-grid" *ngIf="escalatedTickets.length > 0">
+        <mat-card class="ticket-card" *ngFor="let t of escalatedTickets">
+          <b>#{{ t.ticketNumber }}</b>
+          <p>{{ t.title }}</p>
+
+          <mat-chip color="warn" highlighted>ESCALATED</mat-chip>
+
+          <button mat-button color="primary" (click)="viewTicket(t.ticketId)">
+            Handle
+          </button>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- ========= SLA WARNINGS ========= -->
+    <mat-tab label="SLA Warnings">
+      <div *ngIf="slaWarnings.length === 0" class="empty-state">
+        <mat-icon>check_circle</mat-icon>
+        <p>No SLA warnings</p>
+      </div>
+
+      <div class="tickets-grid" *ngIf="slaWarnings.length > 0">
+        <mat-card class="ticket-card" *ngFor="let s of slaWarnings">
+          <b>#{{ s.ticketNumber }}</b>
+
+          <mat-chip color="accent" highlighted>
+            {{ formatMinutes(s.timeRemaining) }}
+          </mat-chip>
+
+          <button mat-button (click)="viewTicket(s.ticketId)">
+            View
+          </button>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+    <!-- ========= SLA BREACHED ========= -->
+    <mat-tab label="SLA Breached">
+      <div *ngIf="slaBreaches.length === 0" class="empty-state">
+        <mat-icon>check_circle</mat-icon>
+        <p>No SLA breaches</p>
+      </div>
+
+      <div class="tickets-grid" *ngIf="slaBreaches.length > 0">
+        <mat-card class="ticket-card breach" *ngFor="let s of slaBreaches">
+          <b>#{{ s.ticketNumber }}</b>
+
+          <mat-chip color="warn" highlighted>
+            SLA BREACHED
+          </mat-chip>
+
+          <button mat-button color="warn" (click)="viewTicket(s.ticketId)">
+            View
+          </button>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+
+</div>

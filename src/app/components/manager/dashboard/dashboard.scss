@@ -1,0 +1,41 @@
+.dashboard-container {
+  padding: 24px;
+}
+
+.header-card {
+  margin-bottom: 16px;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.filters-card {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.tickets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.ticket-card {
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.ticket-card:hover {
+  transform: translateY(-4px);
+}
+
+.loading-container,
+.empty-state {
+  text-align: center;
+  margin-top: 40px;
+}

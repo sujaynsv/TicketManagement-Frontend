@@ -68,3 +68,7 @@ export interface AssignmentPage {
   size: number;
   number: number;
 }
+
+export interface EscalateTicketRequest {
+    reason: string;
+}

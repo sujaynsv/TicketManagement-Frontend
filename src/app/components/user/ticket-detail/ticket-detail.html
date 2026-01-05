@@ -32,6 +32,38 @@
                 {{ ticket.category }}
               </mat-chip>
             </mat-chip-set>
+
+            <!-- ========================================
+                 AGENT STATUS CHANGE BUTTONS
+                 ======================================== -->
+            <div class="status-actions" *ngIf="canChangeStatus()">
+              <button 
+                mat-raised-button 
+                color="primary"
+                *ngFor="let status of getAvailableStatusTransitions()"
+                (click)="changeTicketStatus(status)"
+                class="status-btn"
+              >
+                <mat-icon>{{ getStatusIcon(status) }}</mat-icon>
+                Change to {{ status }}
+              </button>
+            </div>
+
+            <!-- ========================================
+                 ESCALATE BUTTON
+                 ======================================== -->
+            <div class="escalate-action" *ngIf="canEscalate()">
+              <button 
+                mat-raised-button 
+                color="warn"
+                (click)="escalateTicket()"
+                class="escalate-btn"
+              >
+                <mat-icon>trending_up</mat-icon>
+                Escalate to Manager
+              </button>
+            </div>
+
           </div>
         </div>
       </div>
@@ -194,9 +226,7 @@
           </mat-card-content>
         </mat-card>
 
-        <!-- ========================================
-             ATTACHMENTS SECTION (NEW!)
-             ======================================== -->
+        <!-- Attachments Section -->
         <mat-card>
           <mat-card-header>
             <mat-icon mat-card-avatar>attach_file</mat-icon>
@@ -276,7 +306,6 @@
             </mat-list>
           </mat-card-content>
         </mat-card>
-        <!-- END ATTACHMENTS SECTION -->
 
       </div>
     </div>

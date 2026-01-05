@@ -173,15 +173,38 @@
         margin-bottom: 24px;
         align-items: center;
         flex-wrap: wrap;
+        background: #f9f9f9;
+        padding: 16px;
+        border-radius: 8px;
 
-        mat-form-field {
+        .filter-field {
           flex: 1;
           min-width: 200px;
-          max-width: 300px;
+          max-width: 250px;
         }
 
-        button mat-icon {
-          margin-right: 8px;
+        button {
+          mat-icon {
+            margin-right: 8px;
+          }
+        }
+
+        .results-count {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-left: auto;
+          padding: 8px 16px;
+          background: white;
+          border-radius: 20px;
+          font-weight: 600;
+          color: #667eea;
+
+          mat-icon {
+            font-size: 20px;
+            width: 20px;
+            height: 20px;
+          }
         }
       }
 
@@ -222,6 +245,37 @@
           transition: transform 0.2s, box-shadow 0.2s;
           display: flex;
           flex-direction: column;
+          position: relative;
+
+          &::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            border-radius: 4px 0 0 4px;
+          }
+
+          &.priority-CRITICAL::before {
+            background: #f44336;
+          }
+
+          &.priority-HIGH::before {
+            background: #ff9800;
+          }
+
+          &.priority-MEDIUM::before {
+            background: #2196f3;
+          }
+
+          &.priority-LOW::before {
+            background: #4caf50;
+          }
+
+          &.priority-NONE::before {
+            background: #e0e0e0;
+          }
 
           &:hover {
             transform: translateY(-4px);
@@ -257,6 +311,23 @@
                 mat-chip-set {
                   display: flex;
                   gap: 8px;
+                  flex-wrap: wrap;
+                }
+
+                mat-chip {
+                  font-weight: 600;
+                  
+                  mat-icon {
+                    margin-right: 4px;
+                    font-size: 16px;
+                    width: 16px;
+                    height: 16px;
+                  }
+                }
+
+                .no-priority {
+                  background-color: #e0e0e0 !important;
+                  color: #757575 !important;
                 }
               }
             }
@@ -323,19 +394,6 @@
                   font-size: 16px;
                   width: 16px;
                   height: 16px;
-                }
-              }
-            }
-
-            .assignment-status {
-              margin-top: 12px;
-
-              mat-chip {
-                mat-icon {
-                  margin-right: 4px;
-                  font-size: 18px;
-                  width: 18px;
-                  height: 18px;
                 }
               }
             }
@@ -481,6 +539,20 @@
 
     .content-card .tab-content {
       padding: 16px;
+
+      .filter-section {
+        flex-direction: column;
+        align-items: stretch;
+
+        .filter-field {
+          max-width: 100%;
+        }
+
+        .results-count {
+          margin-left: 0;
+          justify-content: center;
+        }
+      }
 
       .assignments-grid {
         grid-template-columns: 1fr;

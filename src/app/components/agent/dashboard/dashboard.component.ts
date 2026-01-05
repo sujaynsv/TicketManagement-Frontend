@@ -54,6 +54,7 @@ export class AgentDashboardComponent implements OnInit {
   username: string = '';
   selectedTab = 0;
   filterStatus: string = 'ALL';
+  sortBy: string = 'PRIORITY'; // ✅ ADD: Default sort by priority
 
   statusOptions = [
     { value: 'ALL', label: 'All Tickets' },
@@ -62,6 +63,24 @@ export class AgentDashboardComponent implements OnInit {
     { value: 'RESOLVED', label: 'Resolved' },
     { value: 'ESCALATED', label: 'Escalated' }
   ];
+
+  // ✅ ADD: Sort options
+  sortOptions = [
+    { value: 'PRIORITY', label: 'Priority (High to Low)' },
+    { value: 'DATE_NEW', label: 'Newest First' },
+    { value: 'DATE_OLD', label: 'Oldest First' },
+    { value: 'STATUS', label: 'Status' }
+  ];
+
+  // ✅ ADD: Priority order for sorting
+  private priorityOrder: { [key: string]: number } = {
+    'CRITICAL': 1,
+    'HIGH': 2,
+    'MEDIUM': 3,
+    'LOW': 4,
+    '': 5, // No priority last
+    null: 5
+  };
 
   constructor(
     private agentService: AgentService,
@@ -84,7 +103,7 @@ export class AgentDashboardComponent implements OnInit {
     this.agentService.getMyAssignments().subscribe({
       next: (assignments) => {
         this.assignments = assignments;
-        this.applyFilter();
+        this.applyFiltersAndSort();
         this.loading = false;
       },
       error: (error) => {
@@ -123,18 +142,52 @@ export class AgentDashboardComponent implements OnInit {
     });
   }
 
-  applyFilter(): void {
-    if (this.filterStatus === 'ALL') {
-      this.filteredAssignments = [...this.assignments];
-    } else {
-      this.filteredAssignments = this.assignments.filter(
-        a => a.ticketStatus === this.filterStatus
-      );
+  // ✅ UPDATE: Combined filter and sort
+  applyFiltersAndSort(): void {
+    // First, filter by status
+    let filtered = [...this.assignments];
+    
+    if (this.filterStatus !== 'ALL') {
+      filtered = filtered.filter(a => a.ticketStatus === this.filterStatus);
     }
+
+    // Then, sort
+    filtered = this.sortAssignments(filtered);
+
+    this.filteredAssignments = filtered;
+  }
+
+  // ✅ ADD: Sorting logic
+  private sortAssignments(assignments: Assignment[]): Assignment[] {
+    return assignments.sort((a, b) => {
+      switch (this.sortBy) {
+        case 'PRIORITY':
+          const priorityA = this.priorityOrder[a.ticketPriority || ''] || 5;
+          const priorityB = this.priorityOrder[b.ticketPriority || ''] || 5;
+          return priorityA - priorityB;
+
+        case 'DATE_NEW':
+          return new Date(b.assignedAt).getTime() - new Date(a.assignedAt).getTime();
+
+        case 'DATE_OLD':
+          return new Date(a.assignedAt).getTime() - new Date(b.assignedAt).getTime();
+
+        case 'STATUS':
+          return (a.ticketStatus || '').localeCompare(b.ticketStatus || '');
+
+        default:
+          return 0;
+      }
+    });
   }
 
   onFilterChange(): void {
-    this.applyFilter();
+    this.applyFiltersAndSort();
+  }
+
+  // ✅ ADD: Sort change handler
+  onSortChange(): void {
+    this.applyFiltersAndSort();
   }
 
   viewTicket(ticketId: string): void {
@@ -154,6 +207,8 @@ export class AgentDashboardComponent implements OnInit {
   }
 
   getPriorityColor(priority: string): string {
+    if (!priority) return ''; // ✅ Handle null/undefined
+    
     switch (priority) {
       case 'CRITICAL': return 'warn';
       case 'HIGH': return 'warn';

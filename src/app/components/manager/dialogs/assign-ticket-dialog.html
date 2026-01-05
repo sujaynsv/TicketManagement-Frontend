@@ -1,0 +1,73 @@
+<h2>Assign Ticket #{{ ticket.ticketNumber }}</h2>
+
+<form [formGroup]="form">
+
+  <!-- AGENT SELECT -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Select Agent</mat-label>
+    <mat-select formControlName="agentId">
+
+      <mat-option
+        *ngFor="let agent of agents"
+        [value]="agent.agentId"
+        [disabled]="!canAssign(agent)"
+      >
+        <div class="agent-option">
+
+          <div class="agent-header">
+            <strong>{{ agent.agentUsername }}</strong>
+
+            <span
+              class="status"
+              [ngClass]="agent.status.toLowerCase()"
+            >
+              {{ agent.status }}
+            </span>
+
+            <span *ngIf="agent.isRecommended" class="recommended">
+              ⭐ Recommended
+            </span>
+          </div>
+
+          <div class="agent-stats">
+            <span>Active: {{ agent.activeTickets }}</span>
+            <span>Total: {{ agent.totalAssignedTickets }}</span>
+            <span>Completed: {{ agent.completedTickets }}</span>
+          </div>
+
+        </div>
+      </mat-option>
+
+    </mat-select>
+  </mat-form-field>
+
+  <!-- PRIORITY -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Priority</mat-label>
+    <mat-select formControlName="priority">
+      <mat-option *ngFor="let p of priorities" [value]="p">
+        {{ p }}
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <!-- NOTES -->
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Assignment Notes</mat-label>
+    <textarea matInput formControlName="assignmentNotes"></textarea>
+  </mat-form-field>
+
+  <!-- ACTIONS -->
+  <div class="dialog-actions">
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="assign()"
+      [disabled]="form.invalid || loading"
+    >
+      Assign
+    </button>
+  </div>
+
+</form>

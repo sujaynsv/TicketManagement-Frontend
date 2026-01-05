@@ -6,24 +6,25 @@ import { authGuard } from './guards/auth-guard';
 import { CreateTicketComponent } from './components/user/create-ticket/create-ticket.component';
 import { TicketDetailComponent } from './components/user/ticket-detail/ticket-detail.component';
 import { ProfileComponent } from './components/user/profile/profile.component';
-import { AgentDashboardComponent } from './components/agent/dashboard/dashboard.component';  // ← ADD THIS
-
+import { AgentDashboardComponent } from './components/agent/dashboard/dashboard.component';
+import { ManagerDashboardComponent } from './components/manager/dashboard/dashboard.component';
+import { ManagerTicketDetailComponent } from './components/manager/ticket-detail/ticket-detail.component';
 
 export const routes: Routes = [
     {
-        path: '', 
-        redirectTo: '/login', 
+        path: '',
+        redirectTo: '/login',
         pathMatch: 'full'
     },
     {
-        path: 'login', 
+        path: 'login',
         component: LoginComponent
     },
     {
-        path: 'register', 
+        path: 'register',
         component: RegisterComponent
     },
-    
+
     // ============================================
     // USER ROUTES (END_USER role)
     // ============================================
@@ -32,30 +33,25 @@ export const routes: Routes = [
         canActivate: [authGuard],
         data: { roles: ['END_USER'] },
         children: [
-            // Dashboard
             {
                 path: 'dashboard',
                 component: UserDashboardComponent
             },
-            
-            // Create ticket (MUST BE BEFORE :ticketId!)
             {
                 path: 'tickets/create',
                 loadComponent: () => CreateTicketComponent
             },
-            
-            // View ticket detail
             {
                 path: 'tickets/:ticketId',
                 loadComponent: () => TicketDetailComponent
             },
             {
-                path: 'profile', 
+                path: 'profile',
                 component: ProfileComponent
             }
         ]
     },
-    
+
     // ============================================
     // AGENT ROUTES (SUPPORT_AGENT role)
     // ============================================
@@ -64,29 +60,45 @@ export const routes: Routes = [
         canActivate: [authGuard],
         data: { roles: ['SUPPORT_AGENT'] },
         children: [
-            // Agent Dashboard
             {
                 path: 'dashboard',
                 component: AgentDashboardComponent
             },
-            
-            // View/Work on ticket (agents use same detail component for now)
             {
                 path: 'tickets/:ticketId',
                 loadComponent: () => TicketDetailComponent
             },
-            
-            // Agent Profile
             {
                 path: 'profile',
                 component: ProfileComponent
             }
         ]
     },
-    
-    // Wildcard route
+
+    // ============================================
+    // MANAGER ROUTES (SUPPORT_MANAGER role)
+    // ============================================
     {
-        path: '**', 
+        path: 'manager',
+        canActivate: [authGuard],
+        data: { roles: ['SUPPORT_MANAGER'] },
+        children: [
+            {
+                path: 'dashboard',
+                loadComponent: () => ManagerDashboardComponent
+            },
+            {
+                path: 'tickets/:ticketId',
+                loadComponent: () => ManagerTicketDetailComponent
+            }
+        ]
+    },
+
+    // ============================================
+    // WILDCARD ROUTE
+    // ============================================
+    {
+        path: '**',
         redirectTo: '/login'
     }
 ];

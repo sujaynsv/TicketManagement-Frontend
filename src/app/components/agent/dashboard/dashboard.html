@@ -99,10 +99,21 @@
         <div class="tab-content">
           <!-- Filter Section -->
           <div class="filter-section">
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="outline" class="filter-field">
               <mat-label>Filter by Status</mat-label>
+              <mat-icon matPrefix>filter_list</mat-icon>
               <mat-select [(value)]="filterStatus" (selectionChange)="onFilterChange()">
                 <mat-option *ngFor="let option of statusOptions" [value]="option.value">
+                  {{ option.label }}
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="filter-field">
+              <mat-label>Sort By</mat-label>
+              <mat-icon matPrefix>sort</mat-icon>
+              <mat-select [(value)]="sortBy" (selectionChange)="onSortChange()">
+                <mat-option *ngFor="let option of sortOptions" [value]="option.value">
                   {{ option.label }}
                 </mat-option>
               </mat-select>
@@ -112,6 +123,11 @@
               <mat-icon>refresh</mat-icon>
               Refresh
             </button>
+
+            <div class="results-count" *ngIf="!loading">
+              <mat-icon>assignment</mat-icon>
+              <span>{{ filteredAssignments.length }} ticket(s)</span>
+            </div>
           </div>
 
           <!-- Loading State -->
@@ -131,7 +147,7 @@
           <!-- Assignments List -->
           <div class="assignments-grid" *ngIf="!loading && filteredAssignments.length > 0">
             <mat-card 
-              class="assignment-card" 
+              class="assignment-card priority-{{ assignment.ticketPriority || 'NONE' }}" 
               *ngFor="let assignment of filteredAssignments"
               (click)="viewTicket(assignment.ticketId)"
             >
@@ -144,9 +160,20 @@
                   
                   <div class="card-badges">
                     <mat-chip-set>
-                      <mat-chip [color]="getPriorityColor(assignment.ticketPriority)" highlighted>
+                      <mat-chip 
+                        *ngIf="assignment.ticketPriority" 
+                        [color]="getPriorityColor(assignment.ticketPriority)" 
+                        highlighted>
+                        <mat-icon>flag</mat-icon>
                         {{ assignment.ticketPriority }}
                       </mat-chip>
+                      <mat-chip 
+                        *ngIf="!assignment.ticketPriority" 
+                        class="no-priority">
+                        <mat-icon>flag_circle</mat-icon>
+                        No Priority
+                      </mat-chip>
+                      
                       <mat-chip [color]="getStatusColor(assignment.ticketStatus)" highlighted>
                         {{ assignment.ticketStatus }}
                       </mat-chip>
