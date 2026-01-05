@@ -10,7 +10,6 @@
       <mat-option
         *ngFor="let agent of agents"
         [value]="agent.agentId"
-        [disabled]="!canAssign(agent)"
       >
         <div class="agent-option">
 

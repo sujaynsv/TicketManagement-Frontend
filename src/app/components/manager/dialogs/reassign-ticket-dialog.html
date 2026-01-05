@@ -1,0 +1,51 @@
+<h2>Reassign Ticket #{{ data.ticketNumber }}</h2>
+
+<p class="current-agent">
+  Currently assigned to:
+  <strong>{{ data.currentAgentUsername }}</strong>
+</p>
+
+<form [formGroup]="form">
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Select New Agent</mat-label>
+
+    <mat-select formControlName="newAgentId">
+      <mat-option
+        *ngFor="let agent of agents"
+        [value]="agent.agentId"
+      >
+        <div class="agent-option">
+          <strong>{{ agent.agentUsername }}</strong>
+
+          <span class="status" [ngClass]="agent.status.toLowerCase()">
+            {{ agent.status }}
+          </span>
+
+          <span *ngIf="agent.isRecommended" class="recommended">
+            ⭐ Recommended
+          </span>
+
+          <div class="stats">
+            Active: {{ agent.activeTickets }},
+            Total: {{ agent.totalAssignedTickets }},
+            Done: {{ agent.completedTickets }}
+          </div>
+        </div>
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <div class="dialog-actions">
+    <button mat-button (click)="cancel()">Cancel</button>
+    <button
+      mat-raised-button
+      color="primary"
+      (click)="reassign()"
+      [disabled]="form.invalid || loading"
+    >
+      Reassign
+    </button>
+  </div>
+
+</form>

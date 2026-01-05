@@ -17,24 +17,60 @@
       <mat-chip [color]="getStatusColor(ticket.status)" highlighted>
         {{ ticket.status }}
       </mat-chip>
-      <mat-chip *ngIf="ticket.priority" [color]="getPriorityColor(ticket.priority)" highlighted>
+
+      <mat-chip *ngIf="ticket.priority"
+                [color]="getPriorityColor(ticket.priority)"
+                highlighted>
         {{ ticket.priority }}
       </mat-chip>
+
       <mat-chip>{{ ticket.category }}</mat-chip>
     </mat-chip-set>
 
-    <p><strong>Assigned To:</strong> {{ ticket.assignedToUsername || 'Unassigned' }}</p>
+    <p>
+      <strong>Assigned To:</strong>
+      <span *ngIf="ticket.assignedToUsername; else unassigned">
+        {{ ticket.assignedToUsername }}
+      </span>
+      <ng-template #unassigned>
+        <em>Unassigned</em>
+      </ng-template>
+    </p>
   </mat-card-content>
 
   <mat-divider></mat-divider>
 
   <mat-card-actions>
-    <button mat-button color="primary" (click)="changeStatus('IN_PROGRESS')">In Progress</button>
-    <button mat-button color="accent" (click)="changeStatus('RESOLVED')">Resolve</button>
-    <button mat-button color="warn" (click)="deleteTicket()">Delete</button>
-    <button mat-stroked-button (click)="goBack()">Back</button>
-  </mat-card-actions>
 
+    <button mat-button color="primary"
+            (click)="changeStatus('IN_PROGRESS')">
+      In Progress
+    </button>
+
+    <button mat-button color="accent"
+            (click)="changeStatus('RESOLVED')">
+      Resolve
+    </button>
+
+    <!-- ✅ REASSIGN -->
+    <button mat-raised-button color="warn"
+            *ngIf="ticket.assignedToUsername"
+            (click)="openReassignDialog()">
+      <mat-icon>swap_horiz</mat-icon>
+      Reassign
+    </button>
+
+    <button mat-button color="warn"
+            (click)="deleteTicket()">
+      Delete
+    </button>
+
+    <button mat-stroked-button
+            (click)="goBack()">
+      Back
+    </button>
+
+  </mat-card-actions>
 </mat-card>
 
 <!-- COMMENTS -->
@@ -42,7 +78,6 @@
   <mat-card-title>Internal Comments</mat-card-title>
 
   <div *ngFor="let c of comments" class="comment">
-    <!-- <p><strong>{{ c.createdByUsername }}</strong></p> -->
     <p>{{ c.commentText }}</p>
     <small>{{ formatDate(c.createdAt) }}</small>
   </div>
@@ -53,7 +88,9 @@
       <textarea matInput formControlName="content"></textarea>
     </mat-form-field>
 
-    <button mat-raised-button color="primary" (click)="addComment()" [disabled]="submittingComment">
+    <button mat-raised-button color="primary"
+            (click)="addComment()"
+            [disabled]="submittingComment">
       Add Comment
     </button>
   </form>

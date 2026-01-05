@@ -2,8 +2,10 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { TicketStatus } from '../../../models/ticket.model';
 
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
@@ -15,10 +17,11 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 
 import { TicketService } from '../../../services/ticket.service';
-import { AuthService } from '../../../services/auth.service';
 import { Ticket } from '../../../models/ticket.model';
 import { Comment } from '../../../models/comment.model';
 import { Attachment } from '../../../models/attachement.model';
+
+import { ReassignTicketDialogComponent } from '../dialogs/reassign-ticket-dialog.component';
 
 @Component({
   selector: 'app-manager-ticket-detail',
@@ -36,7 +39,8 @@ import { Attachment } from '../../../models/attachement.model';
     MatFormFieldModule,
     MatInputModule,
     MatSnackBarModule,
-    MatTabsModule
+    MatTabsModule,
+    MatDialogModule
   ],
   templateUrl: './ticket-detail.html',
   styleUrls: ['./ticket-detail.scss']
@@ -58,9 +62,9 @@ export class ManagerTicketDetailComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private ticketService: TicketService,
-    private authService: AuthService,
     private fb: FormBuilder,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private dialog: MatDialog
   ) {}
 
   ngOnInit(): void {
@@ -70,13 +74,17 @@ export class ManagerTicketDetailComponent implements OnInit {
 
     const ticketId = this.route.snapshot.paramMap.get('ticketId');
     if (ticketId) {
-      this.loadTicket(ticketId);
+      this.reloadTicket(ticketId);
       this.loadComments(ticketId);
       this.loadAttachments(ticketId);
     }
   }
 
-  loadTicket(ticketId: string): void {
+  // ===============================
+  // LOADERS
+  // ===============================
+
+  reloadTicket(ticketId: string): void {
     this.loading = true;
     this.ticketService.getTicketById(ticketId).subscribe({
       next: ticket => {
@@ -113,6 +121,47 @@ export class ManagerTicketDetailComponent implements OnInit {
     });
   }
 
+  // ===============================
+  // ACTIONS
+  // ===============================
+
+  openReassignDialog(): void {
+    if (!this.ticket) return;
+
+    const ref = this.dialog.open(ReassignTicketDialogComponent, {
+      width: '520px',
+      data: {
+        ticketId: this.ticket.ticketId,
+        ticketNumber: this.ticket.ticketNumber,
+        currentAgentId: this.ticket.assignedAgentId,
+        currentAgentUsername: this.ticket.assignedToUsername
+      }
+    });
+
+    ref.afterClosed().subscribe(result => {
+      if (!result || !this.ticket) return;
+
+      // ✅ IMMEDIATE UI UPDATE
+      this.ticket = {
+        ...this.ticket,
+        assignedAgentId: result.agentId,
+        assignedToUsername: result.agentUsername,
+        status: TicketStatus.ASSIGNED
+      };
+
+      this.snackBar.open(
+        `Ticket reassigned to ${result.agentUsername}`,
+        'Close',
+        { duration: 2000 }
+      );
+
+      // 🔄 BACKGROUND REFRESH (after cache sync)
+      setTimeout(() => {
+        this.reloadTicket(this.ticket!.ticketId);
+      }, 1200);
+    });
+  }
+
   addComment(): void {
     if (!this.ticket || this.commentForm.invalid) return;
 
@@ -120,7 +169,7 @@ export class ManagerTicketDetailComponent implements OnInit {
 
     this.ticketService.addComment(this.ticket.ticketId, {
       commentText: this.commentForm.value.content,
-      isInternal: true // ✅ Manager internal comment
+      isInternal: true
     }).subscribe({
       next: comment => {
         this.comments.push(comment);
@@ -137,7 +186,6 @@ export class ManagerTicketDetailComponent implements OnInit {
 
   changeStatus(status: string): void {
     if (!this.ticket) return;
-
     if (!confirm(`Change status to ${status}?`)) return;
 
     this.ticketService.changeTicketStatus(this.ticket.ticketId, status).subscribe({
@@ -153,7 +201,6 @@ export class ManagerTicketDetailComponent implements OnInit {
 
   deleteTicket(): void {
     if (!this.ticket) return;
-
     if (!confirm(`Delete ticket #${this.ticket.ticketNumber}?`)) return;
 
     this.ticketService.deleteTicket(this.ticket.ticketId).subscribe({
@@ -170,6 +217,10 @@ export class ManagerTicketDetailComponent implements OnInit {
   goBack(): void {
     this.router.navigate(['/manager/dashboard']);
   }
+
+  // ===============================
+  // UI HELPERS
+  // ===============================
 
   getStatusColor(status: string): string {
     switch (status) {

@@ -50,6 +50,8 @@ export interface Ticket {
   closedAt?: string;
   commentCount: number;
   attachmentCount: number;
+
+  assignedAgentId?:string;
   
   // Escalation fields
   escalatedToUserId?: string;
