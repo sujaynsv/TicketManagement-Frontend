@@ -9,6 +9,7 @@ import { ProfileComponent } from './components/user/profile/profile.component';
 import { AgentDashboardComponent } from './components/agent/dashboard/dashboard.component';
 import { ManagerDashboardComponent } from './components/manager/dashboard/dashboard.component';
 import { ManagerTicketDetailComponent } from './components/manager/ticket-detail/ticket-detail.component';
+import { AdminDashboardComponent } from './components/admin/dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
     {
@@ -92,6 +93,10 @@ export const routes: Routes = [
                 loadComponent: () => ManagerTicketDetailComponent
             }
         ]
+    },
+    {
+        path: 'admin/dashboard',
+        component: AdminDashboardComponent
     },
 
     // ============================================

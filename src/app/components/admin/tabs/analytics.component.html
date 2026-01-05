@@ -1,0 +1,280 @@
+<div class="analytics-container">
+
+  <!-- System Overview Section -->
+  <div class="overview-section" *ngIf="!loadingOverview; else overviewLoading">
+    <h3 class="section-title">
+      <mat-icon>dashboard</mat-icon>
+      System Overview
+    </h3>
+
+    <div class="metrics-grid">
+      <!-- Total Tickets -->
+      <mat-card class="metric-card">
+        <div class="metric-icon tickets-icon">
+          <mat-icon>confirmation_number</mat-icon>
+        </div>
+        <div class="metric-content">
+          <h4>{{ overview.totalTickets || 0 }}</h4>
+          <p>Total Tickets</p>
+        </div>
+      </mat-card>
+
+      <!-- Open Tickets -->
+      <mat-card class="metric-card">
+        <div class="metric-icon open-icon">
+          <mat-icon>folder_open</mat-icon>
+        </div>
+        <div class="metric-content">
+          <h4>{{ overview.openTickets || 0 }}</h4>
+          <p>Open Tickets</p>
+        </div>
+      </mat-card>
+
+      <!-- Resolved Tickets -->
+      <mat-card class="metric-card">
+        <div class="metric-icon resolved-icon">
+          <mat-icon>done_all</mat-icon>
+        </div>
+        <div class="metric-content">
+          <h4>{{ overview.resolvedTickets || 0 }}</h4>
+          <p>Resolved</p>
+        </div>
+      </mat-card>
+
+      <!-- SLA Breaches -->
+      <mat-card class="metric-card breached">
+        <div class="metric-icon breached-icon">
+          <mat-icon>error</mat-icon>
+        </div>
+        <div class="metric-content">
+          <h4>{{ overview.slaBreach || 0 }}</h4>
+          <p>SLA Breached</p>
+        </div>
+      </mat-card>
+
+      <!-- Total Agents -->
+      <mat-card class="metric-card">
+        <div class="metric-icon agents-icon">
+          <mat-icon>support_agent</mat-icon>
+        </div>
+        <div class="metric-content">
+          <h4>{{ overview.totalAgents || 0 }}</h4>
+          <p>Agents</p>
+        </div>
+      </mat-card>
+
+      <!-- Total Users -->
+      <mat-card class="metric-card">
+        <div class="metric-icon users-icon">
+          <mat-icon>people</mat-icon>
+        </div>
+        <div class="metric-content">
+          <h4>{{ overview.totalUsers || 0 }}</h4>
+          <p>Users</p>
+        </div>
+      </mat-card>
+    </div>
+  </div>
+
+  <ng-template #overviewLoading>
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  </ng-template>
+
+  <!-- Ticket Analytics Section -->
+  <div class="analytics-section" *ngIf="!loadingTickets; else ticketsLoading">
+    <div class="section-header">
+      <h3 class="section-title">
+        <mat-icon>analytics</mat-icon>
+        Ticket Analytics
+      </h3>
+      <mat-form-field class="days-selector">
+        <mat-label>Days</mat-label>
+        <mat-select [(value)]="selectedDays" (selectionChange)="onDaysChange(selectedDays)">
+          <mat-option *ngFor="let days of dayOptions" [value]="days">
+            {{ days }} Days
+          </mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <mat-card class="analytics-card">
+      <mat-card-header>
+        <mat-card-title>Key Metrics</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="metrics-row">
+          <div class="metric-item">
+            <span class="label">Average Response Time</span>
+            <span class="value">{{ ticketAnalytics.avgResponseTime || '--' }} mins</span>
+          </div>
+          <div class="metric-item">
+            <span class="label">Average Resolution Time</span>
+            <span class="value">{{ ticketAnalytics.avgResolutionTime || '--' }} hours</span>
+          </div>
+          <div class="metric-item">
+            <span class="label">First Response Rate</span>
+            <span class="value">{{ ticketAnalytics.firstResponseRate || '--' }}%</span>
+          </div>
+          <div class="metric-item">
+            <span class="label">Resolution Rate</span>
+            <span class="value">{{ ticketAnalytics.resolutionRate || '--' }}%</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- Ticket Status Distribution -->
+    <mat-card class="analytics-card" *ngIf="ticketAnalytics.statusBreakdown">
+      <mat-card-header>
+        <mat-card-title>Ticket Status Distribution</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="status-breakdown">
+          <div class="status-item" *ngFor="let status of ticketAnalytics.statusBreakdown">
+            <mat-chip [style.background]="getStatusColor(status.status)">
+              {{ status.status }}: {{ status.count }}
+            </mat-chip>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <ng-template #ticketsLoading>
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  </ng-template>
+
+  <!-- Agent Performance Section -->
+  <div class="analytics-section" *ngIf="!loadingAgents; else agentsLoading">
+    <h3 class="section-title">
+      <mat-icon>people</mat-icon>
+      Agent Performance
+    </h3>
+
+    <mat-card class="analytics-card">
+      <div class="table-wrapper">
+        <table mat-table [dataSource]="agentMetrics" class="performance-table">
+          
+          <!-- Username -->
+          <ng-container matColumnDef="username">
+            <th mat-header-cell *matHeaderCellDef>Agent Name</th>
+            <td mat-cell *matCellDef="let agent">{{ agent.username }}</td>
+          </ng-container>
+
+          <!-- Assigned -->
+          <ng-container matColumnDef="assigned">
+            <th mat-header-cell *matHeaderCellDef>Assigned</th>
+            <td mat-cell *matCellDef="let agent">
+              <mat-chip class="badge">{{ agent.ticketsAssigned || 0 }}</mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Resolved -->
+          <ng-container matColumnDef="resolved">
+            <th mat-header-cell *matHeaderCellDef>Resolved</th>
+            <td mat-cell *matCellDef="let agent">
+              <mat-chip class="badge-resolved">{{ agent.ticketsResolved || 0 }}</mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Avg Resolution Time -->
+          <ng-container matColumnDef="avgResolutionTime">
+            <th mat-header-cell *matHeaderCellDef>Avg. Resolution Time</th>
+            <td mat-cell *matCellDef="let agent">
+              {{ agent.avgResolutionTime || '--' }} hrs
+            </td>
+          </ng-container>
+
+          <!-- SLA Compliance -->
+          <ng-container matColumnDef="slaCompliance">
+            <th mat-header-cell *matHeaderCellDef>SLA Compliance</th>
+            <td mat-cell *matCellDef="let agent">
+              <mat-chip [style.background]="getSLAComplianceColor(agent.slaCompliance || 0)">
+                {{ agent.slaCompliance || 0 }}%
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="agentDisplayColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: agentDisplayColumns;"></tr>
+        </table>
+
+        <p *ngIf="agentMetrics.length === 0" class="no-data">No agent performance data available</p>
+      </div>
+    </mat-card>
+  </div>
+
+  <ng-template #agentsLoading>
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  </ng-template>
+
+  <!-- SLA Compliance Section -->
+  <div class="analytics-section" *ngIf="!loadingSLA; else slaLoading">
+    <h3 class="section-title">
+      <mat-icon>schedule</mat-icon>
+      SLA Compliance Report
+    </h3>
+
+    <mat-card class="analytics-card">
+      <mat-card-header>
+        <mat-card-title>Overall SLA Metrics</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="sla-metrics">
+          <div class="sla-metric-item">
+            <span class="label">Overall Compliance</span>
+            <span class="value" [style.color]="getSLAComplianceColor(slaReport.overallCompliance || 0)">
+              {{ slaReport.overallCompliance || 0 }}%
+            </span>
+          </div>
+          <div class="sla-metric-item">
+            <span class="label">Response Time SLA</span>
+            <span class="value" [style.color]="getSLAComplianceColor(slaReport.responseTimeSLA || 0)">
+              {{ slaReport.responseTimeSLA || 0 }}%
+            </span>
+          </div>
+          <div class="sla-metric-item">
+            <span class="label">Resolution Time SLA</span>
+            <span class="value" [style.color]="getSLAComplianceColor(slaReport.resolutionTimeSLA || 0)">
+              {{ slaReport.resolutionTimeSLA || 0 }}%
+            </span>
+          </div>
+          <div class="sla-metric-item">
+            <span class="label">Total Breaches</span>
+            <span class="value breached">{{ slaReport.totalBreaches || 0 }}</span>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+
+    <!-- SLA by Priority -->
+    <mat-card class="analytics-card" *ngIf="slaReport.slaByPriority">
+      <mat-card-header>
+        <mat-card-title>SLA Compliance by Priority</mat-card-title>
+      </mat-card-header>
+      <mat-card-content>
+        <div class="priority-sla">
+          <div class="priority-item" *ngFor="let item of slaReport.slaByPriority">
+            <span class="priority-name">{{ item.priority }}</span>
+            <mat-chip [style.background]="getSLAComplianceColor(item.compliance)">
+              {{ item.compliance }}% ({{ item.breaches }} breaches)
+            </mat-chip>
+          </div>
+        </div>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <ng-template #slaLoading>
+    <div class="loading-container">
+      <mat-spinner diameter="40"></mat-spinner>
+    </div>
+  </ng-template>
+
+</div>

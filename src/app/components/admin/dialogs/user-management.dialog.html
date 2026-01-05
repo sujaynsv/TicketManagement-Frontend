@@ -1,0 +1,90 @@
+<h2 mat-dialog-title>
+  <mat-icon>person</mat-icon>
+  {{ getDialogTitle() }}
+</h2>
+
+<mat-dialog-content>
+  <!-- Confirmation for activate/deactivate -->
+  <div *ngIf="data.action === 'activate' || data.action === 'deactivate'" class="confirmation-message">
+    <mat-icon [style.color]="data.action === 'activate' ? '#4caf50' : '#f44336'" class="large-icon">
+      {{ data.action === 'activate' ? 'check_circle' : 'block' }}
+    </mat-icon>
+    <p>{{ getConfirmMessage() }}</p>
+  </div>
+
+  <!-- Edit User Form -->
+  <form [formGroup]="form" *ngIf="data.action === 'edit'">
+    <mat-form-field class="full-width">
+      <mat-label>First Name</mat-label>
+      <input matInput formControlName="firstName" placeholder="Enter first name">
+      <mat-icon matSuffix>person</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field class="full-width">
+      <mat-label>Last Name</mat-label>
+      <input matInput formControlName="lastName" placeholder="Enter last name">
+      <mat-icon matSuffix>person</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field class="full-width">
+      <mat-label>Email</mat-label>
+      <input matInput formControlName="email" type="email" placeholder="Enter email">
+      <mat-icon matSuffix>email</mat-icon>
+    </mat-form-field>
+  </form>
+
+  <!-- Change Role Form -->
+  <form [formGroup]="form" *ngIf="data.action === 'role'">
+    <mat-form-field class="full-width">
+      <mat-label>Select New Role</mat-label>
+      <mat-select formControlName="role">
+        <mat-option *ngFor="let role of roles" [value]="role">
+          {{ role }}
+        </mat-option>
+      </mat-select>
+      <mat-icon matSuffix>security</mat-icon>
+    </mat-form-field>
+    <p class="info-text">
+      <mat-icon>info</mat-icon>
+      Current Role: <strong>{{ data.user.role }}</strong>
+    </p>
+  </form>
+
+  <!-- Assign Manager Form -->
+  <form [formGroup]="form" *ngIf="data.action === 'manager'">
+    <mat-form-field class="full-width">
+      <mat-label>Select Manager</mat-label>
+      <mat-select formControlName="managerId">
+        <mat-option *ngFor="let manager of data.managers" [value]="manager.userId">
+          {{ manager.firstName }} {{ manager.lastName }} ({{ manager.username }})
+        </mat-option>
+      </mat-select>
+      <mat-icon matSuffix>supervised_user_circle</mat-icon>
+    </mat-form-field>
+  </form>
+
+  <!-- Reset Password Form -->
+  <form [formGroup]="form" *ngIf="data.action === 'password'">
+    <mat-form-field class="full-width">
+      <mat-label>New Password</mat-label>
+      <input matInput formControlName="newPassword" type="password" placeholder="Enter new password">
+      <mat-icon matSuffix>lock</mat-icon>
+    </mat-form-field>
+    <p class="warning-text">
+      <mat-icon>warning</mat-icon>
+      Password must be at least 6 characters long
+    </p>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">
+    <mat-icon>close</mat-icon>
+    Cancel
+  </button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="loading || (form.invalid && data.action !== 'activate' && data.action !== 'deactivate')">
+    <mat-icon *ngIf="!loading">check</mat-icon>
+    <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+    {{ loading ? 'Processing...' : 'Confirm' }}
+  </button>
+</mat-dialog-actions>

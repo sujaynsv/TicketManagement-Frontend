@@ -1,0 +1,117 @@
+<h2 mat-dialog-title>
+  <mat-icon>confirmation_number</mat-icon>
+  {{ getDialogTitle() }}
+</h2>
+
+<mat-dialog-content>
+  <!-- Change Priority Form -->
+  <form [formGroup]="form" *ngIf="data.action === 'priority'">
+    <div class="ticket-info">
+      <p><strong>Title:</strong> {{ data.ticket.title }}</p>
+      <p><strong>Current Priority:</strong> 
+        <mat-chip [style.background]="getPriorityColor(data.ticket.priority)">
+          {{ data.ticket.priority }}
+        </mat-chip>
+      </p>
+    </div>
+
+    <mat-form-field class="full-width">
+      <mat-label>Select New Priority</mat-label>
+      <mat-select formControlName="priority">
+        <mat-option *ngFor="let p of priorities" [value]="p">
+          {{ p }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field class="full-width">
+      <mat-label>Reason for Change</mat-label>
+      <textarea matInput formControlName="reason" rows="3" placeholder="Explain why priority is being changed..."></textarea>
+    </mat-form-field>
+  </form>
+
+  <!-- Change Category Form -->
+  <form [formGroup]="form" *ngIf="data.action === 'category'">
+    <div class="ticket-info">
+      <p><strong>Title:</strong> {{ data.ticket.title }}</p>
+      <p><strong>Current Category:</strong> <code>{{ data.ticket.category }}</code></p>
+    </div>
+
+    <mat-form-field class="full-width">
+      <mat-label>Select New Category</mat-label>
+      <mat-select formControlName="category">
+        <mat-option *ngFor="let c of categories" [value]="c">
+          {{ c }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field class="full-width">
+      <mat-label>Reason for Change</mat-label>
+      <textarea matInput formControlName="reason" rows="3" placeholder="Explain why category is being changed..."></textarea>
+    </mat-form-field>
+  </form>
+
+  <!-- Change Status Form -->
+  <form [formGroup]="form" *ngIf="data.action === 'status'">
+    <div class="ticket-info">
+      <p><strong>Title:</strong> {{ data.ticket.title }}</p>
+      <p><strong>Current Status:</strong> 
+        <mat-chip [style.background]="getStatusColor(data.ticket.status)">
+          {{ data.ticket.status }}
+        </mat-chip>
+      </p>
+    </div>
+
+    <mat-form-field class="full-width">
+      <mat-label>Select New Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option *ngFor="let s of statuses" [value]="s">
+          {{ s }}
+        </mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field class="full-width">
+      <mat-label>Reason for Change</mat-label>
+      <textarea matInput formControlName="reason" rows="3" placeholder="Explain why status is being changed..."></textarea>
+    </mat-form-field>
+  </form>
+
+  <!-- Delete Ticket Form -->
+  <form [formGroup]="form" *ngIf="data.action === 'delete'">
+    <div class="ticket-info">
+      <p><strong>Title:</strong> {{ data.ticket.title }}</p>
+      <p><strong>Current Status:</strong> {{ data.ticket.status }}</p>
+    </div>
+
+    <div class="delete-options">
+      <mat-slide-toggle formControlName="hardDelete" class="hard-delete-toggle">
+        <strong>Hard Delete</strong>
+        <p class="toggle-description">Permanently remove from database (cannot be undone)</p>
+      </mat-slide-toggle>
+    </div>
+
+    <div class="warning-box" [class.danger]="form.get('hardDelete')?.value">
+      <mat-icon>{{ form.get('hardDelete')?.value ? 'error' : 'info' }}</mat-icon>
+      <p>{{ getWarningMessage() }}</p>
+    </div>
+
+    <mat-form-field class="full-width">
+      <mat-label>Reason for Deletion</mat-label>
+      <textarea matInput formControlName="reason" rows="3" placeholder="Explain why ticket is being deleted..."></textarea>
+    </mat-form-field>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">
+    <mat-icon>close</mat-icon>
+    Cancel
+  </button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="loading || form.invalid">
+    <mat-icon *ngIf="!loading">check</mat-icon>
+    <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
+    {{ loading ? 'Processing...' : 'Confirm' }}
+  </button>
+</mat-dialog-actions>

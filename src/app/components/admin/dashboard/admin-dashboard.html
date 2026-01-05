@@ -1,0 +1,546 @@
+<div class="admin-dashboard">
+
+  <!-- HEADER -->
+  <header class="dashboard-header">
+    <h1>Admin Dashboard</h1>
+    <p class="subtitle">System Overview & Management</p>
+  </header>
+
+  <!-- ERROR MESSAGE -->
+  <div *ngIf="error" class="error-banner">
+    <mat-icon>error</mat-icon>
+    <span>{{ error }}</span>
+    <button mat-icon-button (click)="error = ''">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+
+  <!-- STATS SECTION -->
+  <div class="stats-section" *ngIf="!loadingStats; else loadingStatsSpinner">
+    <mat-card class="stat-card">
+      <div class="stat-icon users-icon">
+        <mat-icon>people</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ usersCount }}</h3>
+        <p>Total Users</p>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <div class="stat-icon agents-icon">
+        <mat-icon>support_agent</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ agentsCount }}</h3>
+        <p>Support Agents</p>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <div class="stat-icon managers-icon">
+        <mat-icon>supervisor_account</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ managersCount }}</h3>
+        <p>Managers</p>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <div class="stat-icon tickets-icon">
+        <mat-icon>confirmation_number</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ ticketsCount }}</h3>
+        <p>Total Tickets</p>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card">
+      <div class="stat-icon open-icon">
+        <mat-icon>folder_open</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ openTicketsCount }}</h3>
+        <p>Open Tickets</p>
+      </div>
+    </mat-card>
+
+    <mat-card class="stat-card breached">
+      <div class="stat-icon breached-icon">
+        <mat-icon>warning</mat-icon>
+      </div>
+      <div class="stat-content">
+        <h3>{{ breachedSLAsCount }}</h3>
+        <p>SLA Breached</p>
+      </div>
+    </mat-card>
+  </div>
+
+  <ng-template #loadingStatsSpinner>
+    <div class="loading-container">
+      <mat-spinner diameter="50"></mat-spinner>
+    </div>
+  </ng-template>
+
+  <!-- TABS SECTION -->
+  <mat-tab-group class="admin-tabs">
+
+    <!-- ================= USERS TAB ================= -->
+    <mat-tab label="Users">
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">people</mat-icon>
+        <span>Users</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <div class="table-header">
+          <h2>All Users</h2>
+          <mat-form-field class="search-field">
+            <mat-label>Search Users</mat-label>
+            <input matInput (keyup)="filterUsers($event)" placeholder="Username, email...">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <div class="table-wrapper" *ngIf="!loadingUsers; else usersLoading">
+          <table mat-table [dataSource]="usersDataSource" matSort #usersSort="matSort" class="data-table">
+
+            <!-- User ID -->
+            <ng-container matColumnDef="userId">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>User ID</th>
+              <td mat-cell *matCellDef="let user">{{ user.userId }}</td>
+            </ng-container>
+
+            <!-- Username -->
+            <ng-container matColumnDef="username">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Username</th>
+              <td mat-cell *matCellDef="let user">{{ user.username }}</td>
+            </ng-container>
+
+            <!-- Email -->
+            <ng-container matColumnDef="email">
+              <th mat-header-cell *matHeaderCellDef>Email</th>
+              <td mat-cell *matCellDef="let user">{{ user.email }}</td>
+            </ng-container>
+
+            <!-- Role -->
+            <ng-container matColumnDef="role">
+              <th mat-header-cell *matHeaderCellDef>Role</th>
+              <td mat-cell *matCellDef="let user">
+                <mat-chip [style.background]="getRoleBadgeColor(user.role)">
+                  {{ user.role }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Status -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef>Status</th>
+              <td mat-cell *matCellDef="let user">
+                <mat-chip [ngClass]="user.status === 'ACTIVE' ? 'status-active' : 'status-inactive'">
+                  {{ user.status || 'ACTIVE' }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Created At -->
+            <ng-container matColumnDef="createdAt">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
+              <td mat-cell *matCellDef="let user">{{ user.createdAt | date:'short' }}</td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="usersDisplayColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: usersDisplayColumns;"></tr>
+          </table>
+          <mat-paginator #usersPaginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons></mat-paginator>
+        </div>
+
+        <ng-template #usersLoading>
+          <div class="loading-container">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+    <!-- ================= AGENTS TAB ================= -->
+    <mat-tab label="Agents">
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">support_agent</mat-icon>
+        <span>Agents</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <div class="table-header">
+          <h2>Support Agents</h2>
+          <button mat-raised-button color="primary" (click)="syncAgents()" [disabled]="syncingAgents">
+            <mat-icon *ngIf="!syncingAgents">refresh</mat-icon>
+            <mat-spinner *ngIf="syncingAgents" diameter="20"></mat-spinner>
+            {{ syncingAgents ? 'Syncing...' : 'Sync Agents' }}
+          </button>
+        </div>
+
+        <div class="table-wrapper" *ngIf="!loadingAgents; else agentsLoading">
+          <table mat-table [dataSource]="agentsDataSource" matSort #agentsSort="matSort" class="data-table">
+
+            <!-- Agent ID -->
+            <ng-container matColumnDef="agentId">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Agent ID</th>
+              <td mat-cell *matCellDef="let agent">{{ agent.agentId }}</td>
+            </ng-container>
+
+            <!-- Username -->
+            <ng-container matColumnDef="username">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Username</th>
+              <td mat-cell *matCellDef="let agent">{{ agent.username }}</td>
+            </ng-container>
+
+            <!-- Status -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+              <td mat-cell *matCellDef="let agent">
+                <mat-chip [style.background]="getStatusColor(agent.status)" class="agent-status">
+                  {{ agent.status }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Tickets Assigned -->
+            <ng-container matColumnDef="ticketsAssigned">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Assigned</th>
+              <td mat-cell *matCellDef="let agent">
+                <span class="badge badge-assigned">{{ agent.ticketsAssigned || 0 }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Tickets Resolved -->
+            <ng-container matColumnDef="ticketsResolved">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Resolved</th>
+              <td mat-cell *matCellDef="let agent">
+                <span class="badge badge-resolved">{{ agent.ticketsResolved || 0 }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Actions -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let agent">
+                <button mat-icon-button matTooltip="Change Status">
+                  <mat-icon>edit</mat-icon>
+                </button>
+                <button mat-icon-button matTooltip="View Details">
+                  <mat-icon>info</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="agentsDisplayColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: agentsDisplayColumns;"></tr>
+          </table>
+          <mat-paginator #agentsPaginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons></mat-paginator>
+        </div>
+
+        <ng-template #agentsLoading>
+          <div class="loading-container">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+    <!-- ================= TICKETS TAB ================= -->
+    <mat-tab label="Tickets">
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">confirmation_number</mat-icon>
+        <span>Tickets</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <div class="table-header">
+          <h2>All Tickets</h2>
+          <mat-form-field class="filter-field">
+            <mat-label>Filter by Status</mat-label>
+            <mat-select [(value)]="ticketStatusFilter" (selectionChange)="filterTicketsByStatus(ticketStatusFilter)">
+              <mat-option value="">All Status</mat-option>
+              <mat-option value="OPEN">Open</mat-option>
+              <mat-option value="ASSIGNED">Assigned</mat-option>
+              <mat-option value="ESCALATED">Escalated</mat-option>
+              <mat-option value="RESOLVED">Resolved</mat-option>
+              <mat-option value="CLOSED">Closed</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="table-wrapper" *ngIf="!loadingTickets; else ticketsLoading">
+          <table mat-table [dataSource]="ticketsDataSource" matSort #ticketsSort="matSort" class="data-table">
+
+            <!-- Ticket Number -->
+            <ng-container matColumnDef="ticketNumber">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Ticket #</th>
+              <td mat-cell *matCellDef="let ticket">
+                <span class="ticket-number">{{ ticket.ticketNumber }}</span>
+              </td>
+            </ng-container>
+
+            <!-- Title -->
+            <ng-container matColumnDef="title">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Title</th>
+              <td mat-cell *matCellDef="let ticket">{{ ticket.title | slice:0:40 }}{{ ticket.title?.length > 40 ? '...' : '' }}</td>
+            </ng-container>
+
+            <!-- Status -->
+            <ng-container matColumnDef="status">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Status</th>
+              <td mat-cell *matCellDef="let ticket">
+                <mat-chip [style.background]="getTicketStatusColor(ticket.status)">
+                  {{ ticket.status }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <!-- Priority -->
+            <ng-container matColumnDef="priority">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Priority</th>
+              <td mat-cell *matCellDef="let ticket">
+                <mat-chip *ngIf="ticket.priority" [style.background]="getPriorityColor(ticket.priority)">
+                  {{ ticket.priority }}
+                </mat-chip>
+                <span *ngIf="!ticket.priority" class="text-muted">-</span>
+              </td>
+            </ng-container>
+
+            <!-- Assigned To -->
+            <ng-container matColumnDef="assignedTo">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Assigned To</th>
+              <td mat-cell *matCellDef="let ticket">
+                {{ ticket.assignedToUsername || 'Unassigned' }}
+              </td>
+            </ng-container>
+
+            <!-- Created At -->
+            <ng-container matColumnDef="createdAt">
+              <th mat-header-cell *matHeaderCellDef mat-sort-header>Created</th>
+              <td mat-cell *matCellDef="let ticket">{{ ticket.createdAt | date:'short' }}</td>
+            </ng-container>
+
+            <!-- Actions -->
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Actions</th>
+              <td mat-cell *matCellDef="let ticket">
+                <button mat-icon-button matTooltip="View Details" (click)="viewTicketDetail(ticket.ticketId)">
+                  <mat-icon>visibility</mat-icon>
+                </button>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="ticketsDisplayColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: ticketsDisplayColumns;"></tr>
+          </table>
+          <mat-paginator #ticketsPaginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons></mat-paginator>
+        </div>
+
+        <ng-template #ticketsLoading>
+          <div class="loading-container">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+    <!-- ================= SLA TAB ================= -->
+    <mat-tab label="SLA">
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">schedule</mat-icon>
+        <span>SLA</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <div class="sla-container" *ngIf="!loadingSLAs; else slaLoading">
+          
+          <!-- Active SLAs -->
+          <mat-card class="sla-section">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>check_circle</mat-icon> Active SLAs
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="sla-list" *ngIf="activeSLAs.length > 0; else noActiveSLAs">
+                <div class="sla-item" *ngFor="let sla of activeSLAs">
+                  <div class="sla-info">
+                    <span class="sla-id">Ticket: {{ sla.ticketNumber }}</span>
+                  </div>
+                </div>
+              </div>
+              <ng-template #noActiveSLAs>
+                <p class="empty-state">No active SLAs</p>
+              </ng-template>
+            </mat-card-content>
+          </mat-card>
+
+          <!-- Breached SLAs -->
+          <mat-card class="sla-section breached-section">
+            <mat-card-header>
+              <mat-card-title>
+                <mat-icon>error</mat-icon> Breached SLAs ({{ breachedSLAs.length }})
+              </mat-card-title>
+            </mat-card-header>
+            <mat-card-content>
+              <div class="table-wrapper" *ngIf="breachedSLAs.length > 0; else noBreached">
+                <table mat-table [dataSource]="breachedSLAs" class="data-table">
+                  
+                  <!-- Ticket Number -->
+                  <ng-container matColumnDef="ticketNumber">
+                    <th mat-header-cell *matHeaderCellDef>Ticket #</th>
+                    <td mat-cell *matCellDef="let sla">
+                      <span class="ticket-number">{{ sla.ticketNumber }}</span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Priority -->
+                  <ng-container matColumnDef="priority">
+                    <th mat-header-cell *matHeaderCellDef>Priority</th>
+                    <td mat-cell *matCellDef="let sla">
+                      <mat-chip [style.background]="getPriorityColor(sla.priority)">
+                        {{ sla.priority }}
+                      </mat-chip>
+                    </td>
+                  </ng-container>
+
+                  <!-- SLA Status -->
+                  <ng-container matColumnDef="slaStatus">
+                    <th mat-header-cell *matHeaderCellDef>Status</th>
+                    <td mat-cell *matCellDef="let sla">
+                      <mat-chip style="background: #f44336; color: white;">
+                        BREACHED
+                      </mat-chip>
+                    </td>
+                  </ng-container>
+
+                  <!-- Response Due At -->
+                  <ng-container matColumnDef="responseDueAt">
+                    <th mat-header-cell *matHeaderCellDef>Response Due</th>
+                    <td mat-cell *matCellDef="let sla">
+                      <span>{{ sla.responseDueAt | date:'short' }}</span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Resolution Due At -->
+                  <ng-container matColumnDef="resolutionDueAt">
+                    <th mat-header-cell *matHeaderCellDef>Resolution Due</th>
+                    <td mat-cell *matCellDef="let sla">
+                      <span>{{ sla.resolutionDueAt | date:'short' }}</span>
+                    </td>
+                  </ng-container>
+
+                  <!-- Actions -->
+                  <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef>Actions</th>
+                    <td mat-cell *matCellDef="let sla">
+                      <button mat-icon-button matTooltip="View Ticket" (click)="viewTicketDetail(sla.ticketId)">
+                        <mat-icon>visibility</mat-icon>
+                      </button>
+                    </td>
+                  </ng-container>
+
+                  <tr mat-header-row *matHeaderRowDef="slaDisplayColumns"></tr>
+                  <tr mat-row *matRowDef="let row; columns: slaDisplayColumns;"></tr>
+                </table>
+                <mat-paginator *ngIf="breachedSLAs.length > 5" #slaPaginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons></mat-paginator>
+              </div>
+              <ng-template #noBreached>
+                <p class="empty-state">No breached SLAs</p>
+              </ng-template>
+            </mat-card-content>
+          </mat-card>
+
+        </div>
+
+        <ng-template #slaLoading>
+          <div class="loading-container">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+    <!-- ================= UNASSIGNED TICKETS TAB ================= -->
+    <mat-tab label="Unassigned">
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">assignment</mat-icon>
+        <span>Unassigned</span>
+      </ng-template>
+
+      <div class="tab-content">
+        <div class="table-header">
+          <h2>Unassigned Tickets</h2>
+          <span class="info-badge">{{ unassignedTickets.length }} tickets</span>
+        </div>
+
+        <div class="table-wrapper" *ngIf="!loadingAssignments; else unassignedLoading">
+          <table mat-table [dataSource]="unassignedDataSource" class="data-table">
+
+            <ng-container matColumnDef="ticketNumber">
+              <th mat-header-cell *matHeaderCellDef>Ticket #</th>
+              <td mat-cell *matCellDef="let ticket">
+                <span class="ticket-number">{{ ticket.ticketNumber }}</span>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="title">
+              <th mat-header-cell *matHeaderCellDef>Title</th>
+              <td mat-cell *matCellDef="let ticket">{{ ticket.title | slice:0:50 }}{{ ticket.title?.length > 50 ? '...' : '' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="priority">
+              <th mat-header-cell *matHeaderCellDef>Priority</th>
+              <td mat-cell *matCellDef="let ticket">
+                <mat-chip *ngIf="ticket.priority" [style.background]="getPriorityColor(ticket.priority)">
+                  {{ ticket.priority }}
+                </mat-chip>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="createdBy">
+              <th mat-header-cell *matHeaderCellDef>Created By</th>
+              <td mat-cell *matCellDef="let ticket">{{ ticket.createdByUsername }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="createdAt">
+              <th mat-header-cell *matHeaderCellDef>Created</th>
+              <td mat-cell *matCellDef="let ticket">{{ ticket.createdAt | date:'short' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+              <th mat-header-cell *matHeaderCellDef>Assign To</th>
+              <td mat-cell *matCellDef="let ticket">
+                <mat-form-field class="agent-select">
+                  <mat-label>Select Agent</mat-label>
+                  <mat-select (selectionChange)="assignTicket(ticket.ticketId, $event.value)">
+                    <mat-option *ngFor="let agent of availableAgents" [value]="agent.agentId">
+                      {{ agent.username }}
+                    </mat-option>
+                  </mat-select>
+                </mat-form-field>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="unassignedDisplayColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: unassignedDisplayColumns;"></tr>
+          </table>
+          <mat-paginator #unassignedPaginator [pageSizeOptions]="[5, 10, 25]" showFirstLastButtons></mat-paginator>
+        </div>
+
+        <ng-template #unassignedLoading>
+          <div class="loading-container">
+            <mat-spinner diameter="40"></mat-spinner>
+          </div>
+        </ng-template>
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+
+</div>
