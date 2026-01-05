@@ -15,6 +15,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AdminService } from '../../../services/admin.service';
 import { finalize } from 'rxjs';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { TicketManagementDialogComponent } from '../dialogs/ticket-management.dialog';
+
 
 @Component({
   selector: 'app-admin-dashboard',
@@ -91,7 +94,10 @@ export class AdminDashboardComponent implements OnInit {
   // =============== AVAILABLE AGENTS ===============
   availableAgents: any[] = [];
 
-  constructor(private adminService: AdminService) { }
+  constructor(
+    private adminService: AdminService,
+    private dialog: MatDialog
+) { }
 
   ngOnInit(): void {
     this.loadDashboard();
@@ -229,9 +235,22 @@ export class AdminDashboardComponent implements OnInit {
     setTimeout(() => this.syncingAgents = false, 2000);
   }
 
-  viewTicketDetail(ticketId: string): void {
-    console.log('View ticket:', ticketId);
-  }
+viewTicketDetail(ticketId: string): void {
+  this.dialog.open(TicketManagementDialogComponent, {
+    data: { ticketId },
+    width: '900px',
+    maxWidth: '90vw',
+    maxHeight: '90vh',
+    disableClose: false,
+    panelClass: 'ticket-management-dialog'
+  }).afterClosed().subscribe((result: any) => {
+    if (result) {
+      // Reload tickets if something changed
+      this.loadDashboard();
+    }
+  });
+}
+
 
   assignTicket(ticketId: string, agentId: string): void {
     console.log('Assign ticket', ticketId, 'to agent', agentId);

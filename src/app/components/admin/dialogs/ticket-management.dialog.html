@@ -1,117 +1,318 @@
-<h2 mat-dialog-title>
-  <mat-icon>confirmation_number</mat-icon>
-  {{ getDialogTitle() }}
+<h2 mat-dialog-title *ngIf="ticket" class="dialog-title">
+  <mat-icon class="ticket-icon">confirmation_number</mat-icon>
+  Ticket #{{ ticket.ticketNumber }}
 </h2>
 
-<mat-dialog-content>
-  <!-- Change Priority Form -->
-  <form [formGroup]="form" *ngIf="data.action === 'priority'">
-    <div class="ticket-info">
-      <p><strong>Title:</strong> {{ data.ticket.title }}</p>
-      <p><strong>Current Priority:</strong> 
-        <mat-chip [style.background]="getPriorityColor(data.ticket.priority)">
-          {{ data.ticket.priority }}
-        </mat-chip>
-      </p>
-    </div>
+<mat-dialog-content class="dialog-content" *ngIf="!loadingTicket && ticket">
 
-    <mat-form-field class="full-width">
-      <mat-label>Select New Priority</mat-label>
-      <mat-select formControlName="priority">
-        <mat-option *ngFor="let p of priorities" [value]="p">
-          {{ p }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+  <!-- Quick Actions Bar -->
+  <div class="quick-actions">
+    <button mat-raised-button color="warn" (click)="deleteTicket(false)" [disabled]="submittingDelete">
+      <mat-icon *ngIf="!submittingDelete">delete_outline</mat-icon>
+      <mat-spinner *ngIf="submittingDelete" diameter="20"></mat-spinner>
+      Close Ticket
+    </button>
+    <button mat-raised-button color="accent" (click)="deleteTicket(true)" [disabled]="submittingDelete">
+      <mat-icon *ngIf="!submittingDelete">delete_forever</mat-icon>
+      <mat-spinner *ngIf="submittingDelete" diameter="20"></mat-spinner>
+      Delete Permanently
+    </button>
+  </div>
 
-    <mat-form-field class="full-width">
-      <mat-label>Reason for Change</mat-label>
-      <textarea matInput formControlName="reason" rows="3" placeholder="Explain why priority is being changed..."></textarea>
-    </mat-form-field>
-  </form>
+  <mat-tab-group class="ticket-tabs">
 
-  <!-- Change Category Form -->
-  <form [formGroup]="form" *ngIf="data.action === 'category'">
-    <div class="ticket-info">
-      <p><strong>Title:</strong> {{ data.ticket.title }}</p>
-      <p><strong>Current Category:</strong> <code>{{ data.ticket.category }}</code></p>
-    </div>
+    <!-- ==================== OVERVIEW TAB ==================== -->
+    <mat-tab label="Overview">
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">info</mat-icon>
+        Overview
+      </ng-template>
 
-    <mat-form-field class="full-width">
-      <mat-label>Select New Category</mat-label>
-      <mat-select formControlName="category">
-        <mat-option *ngFor="let c of categories" [value]="c">
-          {{ c }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+      <div class="tab-content">
+        <mat-card class="info-card">
+          <mat-card-header>
+            <mat-card-title>Ticket Information</mat-card-title>
+          </mat-card-header>
 
-    <mat-form-field class="full-width">
-      <mat-label>Reason for Change</mat-label>
-      <textarea matInput formControlName="reason" rows="3" placeholder="Explain why category is being changed..."></textarea>
-    </mat-form-field>
-  </form>
+          <mat-card-content>
+            <div class="info-grid">
+              <!-- Row 1: Title -->
+              <div class="info-field">
+                <label>Title</label>
+                <p>{{ ticket.title }}</p>
+              </div>
 
-  <!-- Change Status Form -->
-  <form [formGroup]="form" *ngIf="data.action === 'status'">
-    <div class="ticket-info">
-      <p><strong>Title:</strong> {{ data.ticket.title }}</p>
-      <p><strong>Current Status:</strong> 
-        <mat-chip [style.background]="getStatusColor(data.ticket.status)">
-          {{ data.ticket.status }}
-        </mat-chip>
-      </p>
-    </div>
+              <!-- Row 2: Status & Priority -->
+              <div class="info-row">
+                <div class="info-field half">
+                  <label>Status</label>
+                  <mat-chip [style.background]="getStatusColor(ticket.status)">
+                    {{ ticket.status }}
+                  </mat-chip>
+                </div>
+                <div class="info-field half">
+                  <label>Priority</label>
+                  <mat-chip [style.background]="getPriorityColor(ticket.priority)">
+                    {{ ticket.priority }}
+                  </mat-chip>
+                </div>
+              </div>
 
-    <mat-form-field class="full-width">
-      <mat-label>Select New Status</mat-label>
-      <mat-select formControlName="status">
-        <mat-option *ngFor="let s of statuses" [value]="s">
-          {{ s }}
-        </mat-option>
-      </mat-select>
-    </mat-form-field>
+              <!-- Row 3: Category & Type -->
+              <div class="info-row">
+                <div class="info-field half">
+                  <label>Category</label>
+                  <p>{{ ticket.category }}</p>
+                </div>
+                <div class="info-field half">
+                  <label>Type</label>
+                  <p>{{ ticket.type || 'General' }}</p>
+                </div>
+              </div>
 
-    <mat-form-field class="full-width">
-      <mat-label>Reason for Change</mat-label>
-      <textarea matInput formControlName="reason" rows="3" placeholder="Explain why status is being changed..."></textarea>
-    </mat-form-field>
-  </form>
+              <!-- Row 4: Created & Assigned -->
+              <div class="info-row">
+                <div class="info-field half">
+                  <label>Created By</label>
+                  <p>{{ ticket.createdBy || 'N/A' }}</p>
+                </div>
+                <div class="info-field half">
+                  <label>Assigned To</label>
+                  <p>{{ ticket.assignedTo || 'Unassigned' }}</p>
+                </div>
+              </div>
 
-  <!-- Delete Ticket Form -->
-  <form [formGroup]="form" *ngIf="data.action === 'delete'">
-    <div class="ticket-info">
-      <p><strong>Title:</strong> {{ data.ticket.title }}</p>
-      <p><strong>Current Status:</strong> {{ data.ticket.status }}</p>
-    </div>
+              <!-- Row 5: Dates -->
+              <div class="info-row">
+                <div class="info-field half">
+                  <label>Created At</label>
+                  <p>{{ ticket.createdAt | date:'short' }}</p>
+                </div>
+                <div class="info-field half">
+                  <label>Updated At</label>
+                  <p>{{ ticket.updatedAt | date:'short' }}</p>
+                </div>
+              </div>
 
-    <div class="delete-options">
-      <mat-slide-toggle formControlName="hardDelete" class="hard-delete-toggle">
-        <strong>Hard Delete</strong>
-        <p class="toggle-description">Permanently remove from database (cannot be undone)</p>
-      </mat-slide-toggle>
-    </div>
+              <!-- Row 6: Description -->
+              <div class="info-field">
+                <label>Description</label>
+                <p class="description">{{ ticket.description }}</p>
+              </div>
 
-    <div class="warning-box" [class.danger]="form.get('hardDelete')?.value">
-      <mat-icon>{{ form.get('hardDelete')?.value ? 'error' : 'info' }}</mat-icon>
-      <p>{{ getWarningMessage() }}</p>
-    </div>
+              <!-- Row 7: Resolution -->
+              <div class="info-field" *ngIf="ticket.resolution">
+                <label>Resolution</label>
+                <p class="resolution">{{ ticket.resolution }}</p>
+              </div>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
 
-    <mat-form-field class="full-width">
-      <mat-label>Reason for Deletion</mat-label>
-      <textarea matInput formControlName="reason" rows="3" placeholder="Explain why ticket is being deleted..."></textarea>
-    </mat-form-field>
-  </form>
+    <!-- ==================== MANAGEMENT TAB ==================== -->
+    <mat-tab label="Management">
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">settings</mat-icon>
+        Management
+      </ng-template>
+
+      <div class="tab-content">
+
+        <!-- Priority Management -->
+        <mat-card class="management-card">
+          <mat-card-header>
+            <mat-card-title>Change Priority</mat-card-title>
+            <button mat-icon-button (click)="togglePriorityForm()" class="toggle-btn">
+              <mat-icon>{{ showPriorityForm ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+          </mat-card-header>
+
+          <mat-card-content *ngIf="showPriorityForm">
+            <form [formGroup]="priorityForm" (ngSubmit)="changePriority()" class="management-form">
+              <mat-form-field class="full-width">
+                <mat-label>Select Priority</mat-label>
+                <mat-select formControlName="priority">
+                  <mat-option *ngFor="let p of priorities" [value]="p">{{ p }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field class="full-width">
+                <mat-label>Reason for Change</mat-label>
+                <textarea matInput formControlName="reason" rows="3" placeholder="Explain why you're changing the priority..."></textarea>
+              </mat-form-field>
+
+              <div class="button-group">
+                <button mat-raised-button color="primary" type="submit" [disabled]="!priorityForm.valid || submittingPriority">
+                  <mat-icon *ngIf="!submittingPriority">check</mat-icon>
+                  <mat-spinner *ngIf="submittingPriority" diameter="20"></mat-spinner>
+                  Update Priority
+                </button>
+                <button mat-button type="button" (click)="togglePriorityForm()">Cancel</button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Category Management -->
+        <mat-card class="management-card">
+          <mat-card-header>
+            <mat-card-title>Change Category</mat-card-title>
+            <button mat-icon-button (click)="toggleCategoryForm()" class="toggle-btn">
+              <mat-icon>{{ showCategoryForm ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+          </mat-card-header>
+
+          <mat-card-content *ngIf="showCategoryForm">
+            <form [formGroup]="categoryForm" (ngSubmit)="changeCategory()" class="management-form">
+              <mat-form-field class="full-width">
+                <mat-label>Select Category</mat-label>
+                <mat-select formControlName="category">
+                  <mat-option *ngFor="let c of categories" [value]="c">{{ c }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field class="full-width">
+                <mat-label>Reason for Change</mat-label>
+                <textarea matInput formControlName="reason" rows="3" placeholder="Explain why you're changing the category..."></textarea>
+              </mat-form-field>
+
+              <div class="button-group">
+                <button mat-raised-button color="primary" type="submit" [disabled]="!categoryForm.valid || submittingCategory">
+                  <mat-icon *ngIf="!submittingCategory">check</mat-icon>
+                  <mat-spinner *ngIf="submittingCategory" diameter="20"></mat-spinner>
+                  Update Category
+                </button>
+                <button mat-button type="button" (click)="toggleCategoryForm()">Cancel</button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Status Management -->
+        <mat-card class="management-card">
+          <mat-card-header>
+            <mat-card-title>Change Status</mat-card-title>
+            <button mat-icon-button (click)="toggleStatusForm()" class="toggle-btn">
+              <mat-icon>{{ showStatusForm ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+          </mat-card-header>
+
+          <mat-card-content *ngIf="showStatusForm">
+            <form [formGroup]="statusForm" (ngSubmit)="changeStatus()" class="management-form">
+              <mat-form-field class="full-width">
+                <mat-label>Select Status</mat-label>
+                <mat-select formControlName="status">
+                  <mat-option *ngFor="let s of statuses" [value]="s">{{ s }}</mat-option>
+                </mat-select>
+              </mat-form-field>
+
+              <mat-form-field class="full-width">
+                <mat-label>Reason for Change</mat-label>
+                <textarea matInput formControlName="reason" rows="3" placeholder="Explain why you're changing the status..."></textarea>
+              </mat-form-field>
+
+              <div class="button-group">
+                <button mat-raised-button color="primary" type="submit" [disabled]="!statusForm.valid || submittingStatus">
+                  <mat-icon *ngIf="!submittingStatus">check</mat-icon>
+                  <mat-spinner *ngIf="submittingStatus" diameter="20"></mat-spinner>
+                  Update Status
+                </button>
+                <button mat-button type="button" (click)="toggleStatusForm()">Cancel</button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+
+        <!-- Reassignment -->
+        <mat-card class="management-card">
+          <mat-card-header>
+            <mat-card-title>Reassign Ticket</mat-card-title>
+            <button mat-icon-button (click)="toggleReassignForm()" class="toggle-btn">
+              <mat-icon>{{ showReassignForm ? 'expand_less' : 'expand_more' }}</mat-icon>
+            </button>
+          </mat-card-header>
+
+          <mat-card-content *ngIf="showReassignForm">
+            <form [formGroup]="reassignForm" (ngSubmit)="reassignTicket()" class="management-form">
+              <mat-form-field class="full-width">
+                <mat-label>Select Agent</mat-label>
+                <mat-select formControlName="agentId">
+                  <mat-option *ngFor="let agent of availableAgents" [value]="agent.userId">
+                    {{ agent.username }} ({{ agent.ticketsAssigned }}/{{ agent.capacity }} tickets)
+                  </mat-option>
+                </mat-select>
+              </mat-form-field>
+                <mat-form-field class="full-width">
+                    <mat-label>Reason for Reassignment</mat-label>
+                    <textarea matInput formControlName="reason" rows="3" 
+                    placeholder="Explain why you're reassigning this ticket..."></textarea>
+                </mat-form-field>
+
+
+              <div class="button-group">
+                <button mat-raised-button color="primary" type="submit" [disabled]="!reassignForm.valid || submittingReassign">
+                  <mat-icon *ngIf="!submittingReassign">person</mat-icon>
+                  <mat-spinner *ngIf="submittingReassign" diameter="20"></mat-spinner>
+                  Reassign
+                </button>
+                <button mat-button type="button" (click)="toggleReassignForm()">Cancel</button>
+              </div>
+            </form>
+          </mat-card-content>
+        </mat-card>
+
+      </div>
+    </mat-tab>
+
+    <!-- ==================== ACTIVITIES TAB ==================== -->
+    <mat-tab label="Activities">
+      <ng-template mat-tab-label>
+        <mat-icon class="tab-icon">history</mat-icon>
+        Activities ({{ activities.length }})
+      </ng-template>
+
+      <div class="tab-content">
+        <mat-card class="activities-card">
+          <mat-card-header>
+            <mat-card-title>Activity Log</mat-card-title>
+          </mat-card-header>
+
+          <mat-card-content>
+            <div *ngIf="loadingActivities" class="loading-container">
+              <mat-spinner diameter="40"></mat-spinner>
+            </div>
+
+            <div *ngIf="!loadingActivities && activities.length > 0" class="activities-list">
+              <div *ngFor="let activity of activities" class="activity-item">
+                <div class="activity-header">
+                  <span class="activity-type">{{ activity.activityType }}</span>
+                  <span class="activity-date">{{ activity.createdAt | date:'short' }}</span>
+                </div>
+                <p class="activity-description">{{ activity.description }}</p>
+                <span class="activity-performer">by {{ activity.performedBy }}</span>
+              </div>
+            </div>
+
+            <div *ngIf="!loadingActivities && activities.length === 0" class="empty-state">
+              <mat-icon>event_note</mat-icon>
+              <p>No activities yet</p>
+            </div>
+          </mat-card-content>
+        </mat-card>
+      </div>
+    </mat-tab>
+
+  </mat-tab-group>
+
 </mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()">
-    <mat-icon>close</mat-icon>
-    Cancel
-  </button>
-  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="loading || form.invalid">
-    <mat-icon *ngIf="!loading">check</mat-icon>
-    <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
-    {{ loading ? 'Processing...' : 'Confirm' }}
-  </button>
+<mat-dialog-content *ngIf="loadingTicket" class="loading-container">
+  <mat-spinner diameter="60"></mat-spinner>
+  <p>Loading ticket details...</p>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button (click)="closeDialog()">Close</button>
 </mat-dialog-actions>

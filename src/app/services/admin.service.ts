@@ -391,4 +391,34 @@ export class AdminService {
       map(response => Array.isArray(response) ? response : response.content || [])
     );
   }
+
+    getAvailableAgents(): Observable<any> {
+    return this.http.get<any>(`${this.userServiceUrl}/agents`).pipe(
+      map(response => Array.isArray(response) ? response : response.content || [])
+    );
+  }
+
+  /**
+   * Reassign ticket to a different agent
+   * POST /admin/assignments/reassign
+   */
+reassignTicket(assignmentId: string, newAgentId: string, reason: string): Observable<any> {
+  return this.http.put(`${this.assignmentServiceUrl}/${assignmentId}/reassign`, { 
+    newAgentId,  // ✅ Correct field name
+    reason       // ✅ Include reason
+  });
+}
+
+  getAssignmentByTicketId(ticketId: string): Observable<any> {
+  return this.http.get<any>(`${this.assignmentServiceUrl}?ticketId=${ticketId}`).pipe(
+    map(response => {
+      if (Array.isArray(response)) {
+        return response.length > 0 ? response[0] : null;
+      }
+      return response.content && response.content.length > 0 ? response.content[0] : null;
+    })
+  );
+}
+
+
 }
