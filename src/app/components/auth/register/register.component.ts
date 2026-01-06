@@ -9,6 +9,8 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AuthService } from '../../../services/auth.service';
+import { MatOptionModule } from '@angular/material/core';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-register',
@@ -22,7 +24,9 @@ import { AuthService } from '../../../services/auth.service';
     MatInputModule,
     MatButtonModule,
     MatProgressSpinnerModule,
-    MatSnackBarModule
+    MatSnackBarModule,
+    MatOptionModule,
+    MatSelectModule
   ],
   templateUrl: './register.html',
   styleUrls: ['./register.scss']
@@ -30,6 +34,12 @@ import { AuthService } from '../../../services/auth.service';
 export class RegisterComponent {
   registerForm: FormGroup;
   loading = false;
+
+  roles=[
+    {value: 'END_USER', label: 'Customer'},
+    {value: 'SUPPORT_AGENT', label: 'Support Agent'},
+    {value: 'SUPPORT_MANAGER', label: 'Support Manager'}
+  ]
 
   constructor(
     private fb: FormBuilder,
@@ -42,7 +52,8 @@ export class RegisterComponent {
       email: ['', [Validators.required, Validators.email]],
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      roleName: ['END_USER', Validators.required]
     });
   }
 

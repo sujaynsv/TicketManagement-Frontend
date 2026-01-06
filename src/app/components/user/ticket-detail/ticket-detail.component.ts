@@ -1,8 +1,3 @@
-import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ActivatedRoute, Router, RouterLink } from '@angular/router';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
-import { MatCardModule } from '@angular/material/card';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatChipsModule } from '@angular/material/chips';
@@ -15,33 +10,26 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatListModule } from '@angular/material/list';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { TicketService } from '../../../services/ticket.service';
 import { AuthService } from '../../../services/auth.service';
 import { Ticket } from '../../../models/ticket.model';
 import { Comment } from '../../../models/comment.model';
 import { Attachment } from '../../../models/attachement.model';
 import { EscalateDialogComponent } from '../../shared/escalate-dialog/escalate-dialog.component';
+import { CommonModule } from '@angular/common';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { MatCardModule } from '@angular/material/card';
+import { Component, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-ticket-detail',
   standalone: true,
   imports: [
-    CommonModule,
-    RouterLink,
-    ReactiveFormsModule,
-    MatCardModule,
-    MatButtonModule,
-    MatIconModule,
-    MatChipsModule,
-    MatDividerModule,
-    MatProgressSpinnerModule,
-    MatFormFieldModule,
-    MatInputModule,
-    MatSnackBarModule,
-    MatTabsModule,
-    MatListModule,
-    MatMenuModule,
-    MatDialogModule
+    CommonModule, RouterLink, ReactiveFormsModule, MatCardModule, MatButtonModule, MatIconModule,
+    MatChipsModule, MatDividerModule, MatProgressSpinnerModule, MatFormFieldModule, MatInputModule,
+    MatSnackBarModule, MatTabsModule, MatListModule, MatMenuModule, MatDialogModule, MatTooltipModule
   ],
   templateUrl: './ticket-detail.html',
   styleUrls: ['./ticket-detail.scss']
@@ -56,18 +44,16 @@ export class TicketDetailComponent implements OnInit {
   loadingAttachments = false;
   submittingComment = false;
   uploadingFile = false;
+  isDownloading = false;
+  downloadingAttachmentId: string | null = null;
   
   currentUserId: string = '';
   commentForm!: FormGroup;
 
-  // ========================================
-  // AGENT-SPECIFIC PROPERTIES
-  // ========================================
   userRole: string = '';
   isAgent: boolean = false;
   isManager: boolean = false;
   
-  // Status change options for agents
   statusTransitions: { [key: string]: string[] } = {
     'OPEN': ['ASSIGNED'],
     'ASSIGNED': ['IN_PROGRESS'],
@@ -153,7 +139,6 @@ export class TicketDetailComponent implements OnInit {
   addComment(): void {
     if (this.commentForm.valid && this.ticket) {
       this.submittingComment = true;
-      
       const request = {
         commentText: this.commentForm.value.content,
         isInternal: false
@@ -175,13 +160,8 @@ export class TicketDetailComponent implements OnInit {
     }
   }
 
-  // ========================================
-  // AGENT STATUS CHANGE METHODS
-  // ========================================
-
   changeTicketStatus(newStatus: string): void {
     if (!this.ticket) return;
-
     const confirmed = confirm(`Are you sure you want to change status to ${newStatus}?`);
     if (!confirmed) return;
 
@@ -189,12 +169,9 @@ export class TicketDetailComponent implements OnInit {
       next: (updatedTicket) => {
         this.ticket = updatedTicket;
         this.snackBar.open(`Status changed to ${newStatus}`, 'Close', { duration: 3000 });
-        
-        // Reload ticket to get latest data
         if (this.ticket) {
           this.loadTicket(this.ticket.ticketId);
         }
-
         setTimeout(() => {
           this.goBack();
         }, 1500);
@@ -206,20 +183,17 @@ export class TicketDetailComponent implements OnInit {
     });
   }
 
-  // Get available status transitions for current ticket status
   getAvailableStatusTransitions(): string[] {
     if (!this.ticket) return [];
     return this.statusTransitions[this.ticket.status] || [];
   }
 
-  // Check if agent can change status
   canChangeStatus(): boolean {
     return (this.isAgent || this.isManager) && 
            this.ticket !== null && 
            this.getAvailableStatusTransitions().length > 0;
   }
 
-  // Get icon for status
   getStatusIcon(status: string): string {
     switch (status) {
       case 'IN_PROGRESS': return 'play_arrow';
@@ -231,10 +205,6 @@ export class TicketDetailComponent implements OnInit {
       default: return 'arrow_forward';
     }
   }
-
-  // ========================================
-  // ESCALATION METHODS
-  // ========================================
 
   escalateTicket(): void {
     if (!this.ticket) return;
@@ -253,8 +223,6 @@ export class TicketDetailComponent implements OnInit {
           next: (updatedTicket) => {
             this.ticket = updatedTicket;
             this.snackBar.open('Ticket escalated to manager successfully!', 'Close', { duration: 3000 });
-            
-            // Navigate back to dashboard after escalation
             setTimeout(() => {
               this.goBack();
             }, 1500);
@@ -268,33 +236,21 @@ export class TicketDetailComponent implements OnInit {
     });
   }
 
-  // Check if ticket can be escalated
   canEscalate(): boolean {
     if (!this.ticket) return false;
-    
-    // Can escalate if:
-    // 1. Agent/Manager role
-    // 2. Status is ASSIGNED or IN_PROGRESS
-    // 3. Not already escalated
     const allowedStatuses = ['ASSIGNED', 'IN_PROGRESS'];
     return (this.isAgent || this.isManager) && 
            allowedStatuses.includes(this.ticket.status);
   }
 
-  // ========================================
-  // ATTACHMENT OPERATIONS
-  // ========================================
-
   onFileSelect(event: any): void {
-    const file = event.target.files[0];
+    const file = event.target.files?.[0];
     if (file && this.ticket) {
-      // Validate file size (max 5MB)
       const maxSize = 5 * 1024 * 1024;
       if (file.size > maxSize) {
         this.snackBar.open('File is too large (max 5MB)', 'Close', { duration: 3000 });
         return;
       }
-
       this.uploadAttachment(file);
     }
   }
@@ -307,9 +263,7 @@ export class TicketDetailComponent implements OnInit {
       next: (attachment) => {
         this.attachments.push(attachment);
         this.uploadingFile = false;
-        this.snackBar.open('File uploaded successfully', 'Close', { duration: 3000 });
-        
-        // Update ticket attachment count
+        this.snackBar.open('   File uploaded successfully', 'Close', { duration: 3000 });
         if (this.ticket) {
           this.ticket = {
             ...this.ticket,
@@ -320,26 +274,43 @@ export class TicketDetailComponent implements OnInit {
       error: (error) => {
         console.error('Error uploading file:', error);
         this.uploadingFile = false;
-        this.snackBar.open('Failed to upload file', 'Close', { duration: 3000 });
+        this.snackBar.open('   Failed to upload file', 'Close', { duration: 3000 });
       }
     });
   }
 
   downloadAttachment(attachment: Attachment): void {
-    this.ticketService.downloadAttachment(attachment.s3Url);
+    if (!this.ticket) return;
+    this.downloadingAttachmentId = attachment.attachmentId;
+    this.snackBar.open('   Downloading file...', 'Close', { duration: 2000 });
+    // Service handles direct download, no subscribe needed
+    this.ticketService.downloadAttachment(this.ticket.ticketId, attachment.attachmentId, attachment.fileName);
+    this.downloadingAttachmentId = null;
+  }
+
+  downloadAllAttachments(): void {
+    if (!this.ticket || this.attachments.length === 0) {
+      this.snackBar.open('No attachments to download', 'Close', { duration: 3000 });
+      return;
+    }
+
+    this.isDownloading = true;
+    this.snackBar.open('📦 Preparing ZIP file...', 'Close', { duration: 2000 });
+    // Service handles direct download, no subscribe needed
+    this.ticketService.downloadAllAttachments(this.ticket.ticketId);
+    
+    setTimeout(() => {
+      this.isDownloading = false;
+    }, 3000);
   }
 
   deleteAttachment(attachment: Attachment): void {
-    if (!this.ticket) return;
-
-    if (!confirm(`Delete ${attachment.fileName}?`)) return;
+    if (!this.ticket || !confirm(`Delete ${attachment.fileName}?`)) return;
 
     this.ticketService.deleteAttachment(this.ticket.ticketId, attachment.attachmentId).subscribe({
       next: () => {
         this.attachments = this.attachments.filter(a => a.attachmentId !== attachment.attachmentId);
-        this.snackBar.open('Attachment deleted', 'Close', { duration: 3000 });
-        
-        // Update ticket attachment count
+        this.snackBar.open('   Deleted', 'Close', { duration: 3000 });
         if (this.ticket) {
           this.ticket = {
             ...this.ticket,
@@ -349,29 +320,33 @@ export class TicketDetailComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error deleting attachment:', error);
-        this.snackBar.open('Failed to delete attachment', 'Close', { duration: 3000 });
+        this.snackBar.open('   Delete failed', 'Close', { duration: 3000 });
       }
     });
   }
 
   canDeleteAttachment(attachment: Attachment): boolean {
-    // Agents and managers can delete any attachment
     if (this.isAgent || this.isManager) return true;
-    // Users can only delete their own attachments
     return attachment.uploadedByUserId === this.currentUserId;
   }
 
-  getFileSize(bytes: number): string {
-    return this.ticketService.getFileSize(bytes);
+  formatFileSize(bytes: number): string {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
   }
 
   getFileIcon(fileType: string): string {
-    return this.ticketService.getFileIcon(fileType);
+    if (!fileType) return 'attach_file';
+    if (fileType.includes('image')) return 'image';
+    if (fileType.includes('pdf')) return 'picture_as_pdf';
+    if (fileType.includes('word') || fileType.includes('document')) return 'description';
+    if (fileType.includes('text')) return 'text_snippet';
+    if (fileType.includes('zip')) return 'folder_zip';
+    return 'attach_file';
   }
-
-  // ========================================
-  // UTILITY METHODS
-  // ========================================
 
   getStatusColor(status: string): string {
     switch (status) {
@@ -401,7 +376,6 @@ export class TicketDetailComponent implements OnInit {
   }
 
   goBack(): void {
-    // Navigate based on role
     if (this.isAgent) {
       this.router.navigate(['/agent/dashboard']);
     } else if (this.isManager) {

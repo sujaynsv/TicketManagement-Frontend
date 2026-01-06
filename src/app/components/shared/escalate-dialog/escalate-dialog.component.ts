@@ -5,7 +5,7 @@ import { MatDialogRef, MAT_DIALOG_DATA, MatDialogModule } from '@angular/materia
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatIconModule } from '@angular/material/icon'; // ✅ ADD THIS
+import { MatIconModule } from '@angular/material/icon'; //  ADD THIS
 
 export interface EscalateDialogData {
   ticketNumber: string;
@@ -22,7 +22,7 @@ export interface EscalateDialogData {
     MatButtonModule,
     MatFormFieldModule,
     MatInputModule,
-    MatIconModule // ✅ ADD THIS
+    MatIconModule //  ADD THIS
   ],
   templateUrl: './escalate-dialog.html',
   styleUrls: ['./escalate-dialog.scss']

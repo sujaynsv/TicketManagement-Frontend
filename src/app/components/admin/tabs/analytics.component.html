@@ -377,7 +377,7 @@
               <th mat-header-cell *matHeaderCellDef>SLA Breaches</th>
               <td mat-cell *matCellDef="let item">
                 <mat-chip *ngIf="item.slaBreaches > 0" class="breach-badge">
-                  ⚠️ {{ item.slaBreaches }}
+                    {{ item.slaBreaches }}
                 </mat-chip>
                 <span *ngIf="item.slaBreaches === 0" class="no-breaches">✓ None</span>
               </td>

@@ -1,97 +1,46 @@
+
 <div class="ticket-detail-container">
-  
-  <!-- Loading State -->
   <div *ngIf="loading" class="loading-container">
     <mat-spinner></mat-spinner>
   </div>
 
-  <!-- Ticket Content -->
   <div *ngIf="!loading && ticket">
-    
-    <!-- Header -->
     <mat-card class="header-card">
       <div class="header-content">
-        <button mat-icon-button (click)="goBack()" class="back-button">
-          <mat-icon>arrow_back</mat-icon>
-        </button>
-        
+        <button mat-icon-button (click)="goBack()" class="back-button"><mat-icon>arrow_back</mat-icon></button>
         <div class="ticket-header-info">
           <div class="ticket-number">Ticket #{{ ticket.ticketNumber }}</div>
           <h1>{{ ticket.title }}</h1>
-          
           <div class="ticket-meta">
             <mat-chip-set>
-              <mat-chip [color]="getStatusColor(ticket.status)" highlighted>
-                {{ ticket.status }}
-              </mat-chip>
-              <mat-chip *ngIf="ticket.priority" [color]="getPriorityColor(ticket.priority)" highlighted>
-                {{ ticket.priority }}
-              </mat-chip>
-              <mat-chip>
-                <mat-icon matChipAvatar>category</mat-icon>
-                {{ ticket.category }}
-              </mat-chip>
+              <mat-chip [color]="getStatusColor(ticket.status)" highlighted>{{ ticket.status }}</mat-chip>
+              <mat-chip *ngIf="ticket.priority" [color]="getPriorityColor(ticket.priority)" highlighted>{{ ticket.priority }}</mat-chip>
+              <mat-chip><mat-icon matChipAvatar>category</mat-icon>{{ ticket.category }}</mat-chip>
             </mat-chip-set>
-
-            <!-- ========================================
-                 AGENT STATUS CHANGE BUTTONS
-                 ======================================== -->
             <div class="status-actions" *ngIf="canChangeStatus()">
-              <button 
-                mat-raised-button 
-                color="primary"
-                *ngFor="let status of getAvailableStatusTransitions()"
-                (click)="changeTicketStatus(status)"
-                class="status-btn"
-              >
-                <mat-icon>{{ getStatusIcon(status) }}</mat-icon>
-                Change to {{ status }}
+              <button mat-raised-button color="primary" *ngFor="let status of getAvailableStatusTransitions()" (click)="changeTicketStatus(status)" class="status-btn">
+                <mat-icon>{{ getStatusIcon(status) }}</mat-icon> {{ status }}
               </button>
             </div>
-
-            <!-- ========================================
-                 ESCALATE BUTTON
-                 ======================================== -->
             <div class="escalate-action" *ngIf="canEscalate()">
-              <button 
-                mat-raised-button 
-                color="warn"
-                (click)="escalateTicket()"
-                class="escalate-btn"
-              >
-                <mat-icon>trending_up</mat-icon>
-                Escalate to Manager
-              </button>
+              <button mat-raised-button color="warn" (click)="escalateTicket()" class="escalate-btn"><mat-icon>trending_up</mat-icon> Escalate</button>
             </div>
-
           </div>
         </div>
       </div>
     </mat-card>
 
-    <!-- Main Content -->
     <div class="content-grid">
-      
-      <!-- Left Column - Details -->
       <div class="left-column">
-        
-        <!-- Description -->
         <mat-card>
-          <mat-card-header>
-            <mat-icon mat-card-avatar>description</mat-icon>
-            <mat-card-title>Description</mat-card-title>
-          </mat-card-header>
+          <mat-card-header><mat-icon mat-card-avatar>description</mat-icon><mat-card-title>Description</mat-card-title></mat-card-header>
           <mat-card-content>
             <p class="description-text">{{ ticket.description }}</p>
           </mat-card-content>
         </mat-card>
 
-        <!-- Tags -->
         <mat-card *ngIf="ticket.tags && ticket.tags.length > 0">
-          <mat-card-header>
-            <mat-icon mat-card-avatar>label</mat-icon>
-            <mat-card-title>Tags</mat-card-title>
-          </mat-card-header>
+          <mat-card-header><mat-icon mat-card-avatar>label</mat-icon><mat-card-title>Tags</mat-card-title></mat-card-header>
           <mat-card-content>
             <mat-chip-set>
               <mat-chip *ngFor="let tag of ticket.tags">{{ tag }}</mat-chip>
@@ -99,62 +48,27 @@
           </mat-card-content>
         </mat-card>
 
-        <!-- Comments Section -->
         <mat-card>
-          <mat-card-header>
-            <mat-icon mat-card-avatar>comment</mat-icon>
-            <mat-card-title>Comments ({{ comments.length }})</mat-card-title>
-          </mat-card-header>
-          
+          <mat-card-header><mat-icon mat-card-avatar>comment</mat-icon><mat-card-title>Comments ({{ comments.length }})</mat-card-title></mat-card-header>
           <mat-card-content>
-            
-            <!-- Add Comment Form -->
             <form [formGroup]="commentForm" (ngSubmit)="addComment()" class="comment-form">
               <mat-form-field appearance="outline" class="full-width">
                 <mat-label>Add a comment</mat-label>
-                <textarea 
-                  matInput 
-                  formControlName="content" 
-                  rows="3"
-                  placeholder="Share additional information...">
-                </textarea>
-                <mat-error *ngIf="commentForm.get('content')?.hasError('required')">
-                  Comment is required
-                </mat-error>
-                <mat-error *ngIf="commentForm.get('content')?.hasError('minlength')">
-                  Comment must be at least 10 characters
-                </mat-error>
+                <textarea matInput formControlName="content" rows="3" placeholder="Share additional information..."></textarea>
+                <mat-error *ngIf="commentForm.get('content')?.hasError('required')">Comment is required</mat-error>
+                <mat-error *ngIf="commentForm.get('content')?.hasError('minlength')">At least 10 characters</mat-error>
               </mat-form-field>
-              
-              <button 
-                type="submit" 
-                mat-raised-button 
-                color="primary"
-                [disabled]="commentForm.invalid || submittingComment">
-                <mat-icon>send</mat-icon>
-                {{ submittingComment ? 'Posting...' : 'Post Comment' }}
+              <button type="submit" mat-raised-button color="primary" [disabled]="commentForm.invalid || submittingComment">
+                <mat-icon>send</mat-icon> {{ submittingComment ? 'Posting...' : 'Post' }}
               </button>
             </form>
-
             <mat-divider></mat-divider>
-
-            <!-- Comments List -->
-            <div *ngIf="loadingComments" class="loading-comments">
-              <mat-spinner diameter="30"></mat-spinner>
-            </div>
-
+            <div *ngIf="loadingComments" class="loading-comments"><mat-spinner diameter="30"></mat-spinner></div>
             <div *ngIf="!loadingComments" class="comments-list">
-              <div *ngIf="comments.length === 0" class="no-comments">
-                <mat-icon>chat_bubble_outline</mat-icon>
-                <p>No comments yet. Be the first to comment!</p>
-              </div>
-
+              <div *ngIf="comments.length === 0" class="no-comments"><mat-icon>chat_bubble_outline</mat-icon><p>No comments yet</p></div>
               <div *ngFor="let comment of comments" class="comment-item">
                 <div class="comment-header">
-                  <div class="comment-author">
-                    <mat-icon>account_circle</mat-icon>
-                    <strong>{{ comment.username }}</strong>
-                  </div>
+                  <div class="comment-author"><mat-icon>account_circle</mat-icon><strong>{{ comment.username }}</strong></div>
                   <span class="comment-date">{{ formatDate(comment.createdAt) }}</span>
                 </div>
                 <p class="comment-content">{{ comment.commentText }}</p>
@@ -164,15 +78,9 @@
         </mat-card>
       </div>
 
-      <!-- Right Column - Info -->
       <div class="right-column">
-        
-        <!-- Ticket Info -->
         <mat-card>
-          <mat-card-header>
-            <mat-icon mat-card-avatar>info</mat-icon>
-            <mat-card-title>Ticket Information</mat-card-title>
-          </mat-card-header>
+          <mat-card-header><mat-icon mat-card-avatar>info</mat-icon><mat-card-title>Information</mat-card-title></mat-card-header>
           <mat-card-content>
             <mat-list>
               <mat-list-item>
@@ -180,25 +88,21 @@
                 <div matListItemTitle>Created By</div>
                 <div matListItemLine>{{ ticket.createdByUsername }}</div>
               </mat-list-item>
-              
               <mat-list-item *ngIf="ticket.assignedToUsername">
                 <mat-icon matListItemIcon>assignment_ind</mat-icon>
                 <div matListItemTitle>Assigned To</div>
                 <div matListItemLine>{{ ticket.assignedToUsername }}</div>
               </mat-list-item>
-              
               <mat-list-item>
                 <mat-icon matListItemIcon>schedule</mat-icon>
                 <div matListItemTitle>Created</div>
                 <div matListItemLine>{{ formatDate(ticket.createdAt) }}</div>
               </mat-list-item>
-              
               <mat-list-item>
                 <mat-icon matListItemIcon>update</mat-icon>
-                <div matListItemTitle>Last Updated</div>
+                <div matListItemTitle>Updated</div>
                 <div matListItemLine>{{ formatDate(ticket.updatedAt) }}</div>
               </mat-list-item>
-
               <mat-list-item *ngIf="ticket.resolvedAt">
                 <mat-icon matListItemIcon>check_circle</mat-icon>
                 <div matListItemTitle>Resolved</div>
@@ -208,105 +112,52 @@
           </mat-card-content>
         </mat-card>
 
-        <!-- Stats -->
         <mat-card>
-          <mat-card-header>
-            <mat-icon mat-card-avatar>analytics</mat-icon>
-            <mat-card-title>Activity</mat-card-title>
-          </mat-card-header>
+          <mat-card-header><mat-icon mat-card-avatar>analytics</mat-icon><mat-card-title>Activity</mat-card-title></mat-card-header>
           <mat-card-content>
-            <div class="stat-item">
-              <mat-icon>comment</mat-icon>
-              <span>{{ ticket.commentCount || 0 }} Comments</span>
-            </div>
-            <div class="stat-item">
-              <mat-icon>attach_file</mat-icon>
-              <span>{{ ticket.attachmentCount || 0 }} Attachments</span>
-            </div>
+            <div class="stat-item"><mat-icon>comment</mat-icon><span>{{ ticket.commentCount || 0 }} Comments</span></div>
+            <div class="stat-item"><mat-icon>attach_file</mat-icon><span>{{ ticket.attachmentCount || 0 }} Files</span></div>
           </mat-card-content>
         </mat-card>
 
-        <!-- Attachments Section -->
         <mat-card>
-          <mat-card-header>
-            <mat-icon mat-card-avatar>attach_file</mat-icon>
-            <mat-card-title>Attachments ({{ attachments.length }})</mat-card-title>
-          </mat-card-header>
-          
+          <mat-card-header><mat-icon mat-card-avatar>attach_file</mat-icon><mat-card-title>Attachments ({{ attachments.length }})</mat-card-title></mat-card-header>
           <mat-card-content>
-            
-            <!-- Upload Button -->
-            <button 
-              mat-stroked-button 
-              color="primary" 
-              (click)="fileInput.click()"
-              [disabled]="uploadingFile"
-              class="upload-btn">
+            <button mat-stroked-button color="primary" (click)="fileInput.click()" [disabled]="uploadingFile" class="upload-btn">
               <mat-spinner *ngIf="uploadingFile" diameter="20"></mat-spinner>
-              <mat-icon *ngIf="!uploadingFile">cloud_upload</mat-icon>
-              {{ uploadingFile ? 'Uploading...' : 'Upload File' }}
+              <mat-icon *ngIf="!uploadingFile">cloud_upload</mat-icon> {{ uploadingFile ? 'Uploading...' : 'Upload' }}
             </button>
-            
-            <input 
-              #fileInput 
-              type="file" 
-              style="display: none;"
-              (change)="onFileSelect($event)"
-              accept="image/*,.pdf,.doc,.docx,.txt">
-
+            <input #fileInput type="file" style="display: none;" (change)="onFileSelect($event)" accept="image/*,.pdf,.doc,.docx,.txt">
+            <small style="text-align: center; display: block; margin-top: 0.5rem; color: #999;">Max 5MB</small>
             <mat-divider style="margin: 1rem 0;"></mat-divider>
-
-            <!-- Loading State -->
-            <div *ngIf="loadingAttachments" class="loading-attachments">
-              <mat-spinner diameter="30"></mat-spinner>
-            </div>
-
-            <!-- No Attachments -->
-            <div *ngIf="!loadingAttachments && attachments.length === 0" class="no-attachments">
-              <mat-icon>cloud_off</mat-icon>
-              <p>No attachments yet</p>
-            </div>
-
-            <!-- Attachments List -->
+            <div *ngIf="loadingAttachments" class="loading-attachments"><mat-spinner diameter="30"></mat-spinner></div>
+            <div *ngIf="!loadingAttachments && attachments.length === 0" class="no-attachments"><mat-icon>cloud_off</mat-icon><p>No files</p></div>
             <mat-list *ngIf="!loadingAttachments && attachments.length > 0">
-              <mat-list-item *ngFor="let attachment of attachments" class="attachment-item">
-                <mat-icon matListItemIcon [style.color]="'#667eea'">
-                  {{ getFileIcon(attachment.fileType) }}
-                </mat-icon>
-                
-                <div matListItemTitle class="attachment-name">
-                  {{ attachment.fileName }}
-                </div>
-                
-                <div matListItemLine class="attachment-meta">
-                  {{ getFileSize(attachment.fileSize) }} • {{ attachment.uploadedByUsername }} • {{ formatDate(attachment.uploadedAt) }}
-                </div>
-
-                <button 
-                  mat-icon-button 
-                  [matMenuTriggerFor]="attachmentMenu"
-                  matListItemMeta>
-                  <mat-icon>more_vert</mat-icon>
-                </button>
-
-                <mat-menu #attachmentMenu="matMenu">
-                  <button mat-menu-item (click)="downloadAttachment(attachment)">
-                    <mat-icon>download</mat-icon>
+              <mat-list-item *ngFor="let att of attachments" class="attachment-item">
+                <mat-icon matListItemIcon [style.color]="'#667eea'">{{ getFileIcon(att.fileType) }}</mat-icon>
+                <div matListItemTitle class="attachment-name">{{ att.fileName }}</div>
+                <div matListItemLine class="attachment-meta">{{ formatFileSize(att.fileSize) }} • {{ att.uploadedByUsername }}</div>
+                <button mat-icon-button [matMenuTriggerFor]="menu" matListItemMeta><mat-icon>more_vert</mat-icon></button>
+                <mat-menu #menu="matMenu">
+                  <button mat-menu-item (click)="downloadAttachment(att)" [disabled]="downloadingAttachmentId !== null">
+                    <mat-icon *ngIf="downloadingAttachmentId !== att.attachmentId">download</mat-icon>
+                    <mat-spinner *ngIf="downloadingAttachmentId === att.attachmentId" diameter="20"></mat-spinner>
                     <span>Download</span>
                   </button>
-                  <button 
-                    mat-menu-item 
-                    *ngIf="canDeleteAttachment(attachment)"
-                    (click)="deleteAttachment(attachment)">
-                    <mat-icon color="warn">delete</mat-icon>
-                    <span>Delete</span>
+                  <button mat-menu-item *ngIf="canDeleteAttachment(att)" (click)="deleteAttachment(att)">
+                    <mat-icon color="warn">delete</mat-icon><span>Delete</span>
                   </button>
                 </mat-menu>
               </mat-list-item>
             </mat-list>
+            <div *ngIf="!loadingAttachments && attachments.length > 0" style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
+              <button mat-raised-button color="accent" (click)="downloadAllAttachments()" [disabled]="isDownloading" style="width: 100%;">
+                <mat-spinner *ngIf="isDownloading" diameter="20"></mat-spinner>
+                <mat-icon *ngIf="!isDownloading">folder_zip</mat-icon> {{ isDownloading ? 'Preparing...' : 'Download All' }}
+              </button>
+            </div>
           </mat-card-content>
         </mat-card>
-
       </div>
     </div>
   </div>

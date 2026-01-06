@@ -141,7 +141,7 @@ export class ManagerTicketDetailComponent implements OnInit {
     ref.afterClosed().subscribe(result => {
       if (!result || !this.ticket) return;
 
-      // ✅ IMMEDIATE UI UPDATE
+      //  IMMEDIATE UI UPDATE
       this.ticket = {
         ...this.ticket,
         assignedAgentId: result.agentId,

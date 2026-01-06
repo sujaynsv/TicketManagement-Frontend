@@ -11,6 +11,7 @@ import { ManagerDashboardComponent } from './components/manager/dashboard/dashbo
 import { ManagerTicketDetailComponent } from './components/manager/ticket-detail/ticket-detail.component';
 import { AdminDashboardComponent } from './components/admin/dashboard/admin-dashboard.component';
 import { AnalyticsComponent } from './components/admin/tabs/analytics.component';
+
 export const routes: Routes = [
     {
         path: '',

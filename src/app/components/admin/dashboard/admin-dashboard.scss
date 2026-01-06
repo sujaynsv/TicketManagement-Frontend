@@ -185,11 +185,27 @@
   ::ng-deep {
     .mat-mdc-tab-header {
       background-color: var(--color-surface);
-      border-bottom: 1px solid var(--color-border);
+      border-bottom: 2px solid var(--color-border);
+      display: flex;
+      margin-bottom: 0;
     }
 
     .mat-mdc-tab {
       min-width: 120px;
+      height: auto;
+      flex: 1 1 auto;
+    }
+
+    .mat-mdc-tab-labels {
+      display: flex;
+      justify-content: flex-start;
+      width: 100%;
+    }
+
+    .mdc-tab {
+      min-width: 0 !important;
+      flex: 0 1 auto;
+      padding: 0 !important;
     }
 
     .mdc-tab__text-label {
@@ -197,15 +213,25 @@
       align-items: center;
       gap: 8px;
       font-weight: 500;
+      padding: 12px 16px;
+    }
+
+    .mat-mdc-tab-body-content {
+      padding: 0;
     }
   }
 }
 
+.tab-label {
+  display: inline-block;
+  white-space: nowrap;
+}
+
 .tab-icon {
-  margin-right: 4px;
   font-size: 20px;
   width: 20px;
   height: 20px;
+  margin-right: 4px;
 }
 
 .tab-content {
@@ -317,6 +343,11 @@ mat-chip {
     min-height: 28px;
     padding: 0 12px !important;
   }
+
+  &.role-badge {
+    color: white !important;
+    font-weight: 600;
+  }
 }
 
 .badge {
@@ -343,6 +374,99 @@ mat-chip {
 
 .text-muted {
   color: var(--color-text-secondary);
+}
+
+/* ==================== STATUS BADGE ==================== */
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+
+  .status-icon {
+    font-size: 16px;
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* ==================== ACTIONS CELL ==================== */
+
+.actions-cell {
+  padding: 8px 12px !important;
+}
+
+.actions-container {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-wrap: wrap;
+
+  button[mat-icon-button] {
+    color: var(--color-primary);
+    transition: all 0.2s ease;
+    padding: 4px;
+
+    &:hover {
+      background-color: var(--color-secondary);
+      transform: scale(1.1);
+    }
+
+    &[color="warn"] {
+      color: #f44336;
+    }
+
+    &[color="accent"] {
+      color: #4caf50;
+    }
+
+    mat-icon {
+      font-size: 20px;
+      width: 20px;
+      height: 20px;
+    }
+  }
+}
+
+/* ==================== USER ACTIONS MENU ==================== */
+
+::ng-deep {
+  .user-actions-menu {
+    .mat-mdc-menu-content {
+      padding: 8px 0 !important;
+    }
+
+    button[mat-menu-item] {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      font-size: 13px;
+      min-height: 40px;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+        color: var(--color-primary);
+      }
+
+      span {
+        flex: 1;
+      }
+
+      &:hover {
+        background-color: var(--color-secondary);
+      }
+    }
+
+    mat-divider {
+      margin: 4px 0;
+    }
+  }
 }
 
 /* ==================== SLA SECTION ==================== */
@@ -544,6 +668,20 @@ button[mat-icon-button] {
     }
   }
 
+  .actions-container {
+    gap: 2px;
+
+    button[mat-icon-button] {
+      padding: 2px;
+
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+  }
+
   .agent-select {
     max-width: 150px;
   }
@@ -584,9 +722,16 @@ button[mat-icon-button] {
     margin-bottom: 4px;
   }
 
-  .admin-tabs ::ng-deep .mat-mdc-tab {
-    min-width: 80px;
-    font-size: 11px;
+  .admin-tabs ::ng-deep {
+    .mat-mdc-tab {
+      min-width: 80px;
+      font-size: 11px;
+    }
+
+    .mdc-tab__text-label {
+      padding: 8px 12px;
+      font-size: 11px;
+    }
   }
 
   .tab-content {
@@ -599,6 +744,20 @@ button[mat-icon-button] {
     th,
     td {
       padding: 8px 6px;
+    }
+  }
+
+  .actions-container {
+    gap: 0;
+
+    button[mat-icon-button] {
+      padding: 0;
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+      }
     }
   }
 
@@ -646,4 +805,54 @@ button[mat-icon-button] {
       background-color: var(--color-secondary);
     }
   }
+
+  .mat-mdc-menu-content {
+    background-color: var(--color-surface) !important;
+    color: var(--color-text) !important;
+  }
+
+  .mat-mdc-tab-header-pagination {
+    display: none !important;
+  }
 }
+/* ==================== ADD TO admin-dashboard.scss ==================== */
+
+/* Add this ASSIGN CELL styling after the .agent-select section: */
+
+.assign-cell {
+  padding: 8px !important;
+  vertical-align: middle;
+}
+
+.agent-select {
+  width: 100%;
+  max-width: 220px;
+  margin: 0;
+}
+
+::ng-deep {
+  .agent-select .mat-mdc-form-field-infix {
+    padding: 8px 0;
+  }
+
+  .agent-select .mdc-text-field--filled {
+    background-color: var(--color-secondary);
+  }
+
+  .agent-select .mat-mdc-select-trigger {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+    font-size: 13px;
+    min-height: 36px;
+  }
+
+  .agent-select .mdc-select__anchor {
+    min-height: 36px;
+  }
+
+  .agent-select .mat-mdc-option {
+    font-size: 13px;
+  }
+}
+

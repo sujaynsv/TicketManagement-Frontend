@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 export interface Assignment {
@@ -40,6 +41,10 @@ export interface SLAWarning {
   slaDeadline: string;
   timeRemaining: number;
   status: string;
+}
+
+export interface ActiveSla{
+  
 }
 
 export interface AgentStats {
@@ -108,4 +113,18 @@ export class AgentService {
     if (minutes < 240) return 'accent';
     return 'primary';
   }
+
+  getActiveSLAs(): Observable<any> {
+  return this.http.get<any>(`${environment.apiUrl}/sla/active`).pipe(
+    map(response => Array.isArray(response) ? response : response.content || [])
+  );
+}
+
+getBreachedSLAs(): Observable<any> {
+  return this.http.get<any>(`${environment.apiUrl}/sla/breached`).pipe(
+    map(response => Array.isArray(response) ? response : response.content || [])
+  );
+}
+
+
 }

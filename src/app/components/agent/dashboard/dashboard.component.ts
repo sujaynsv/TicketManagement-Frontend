@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, DatePipe } from '@angular/common';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatCardModule } from '@angular/material/card';
@@ -17,12 +17,45 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { AgentService, Assignment, SLAWarning, AgentStats } from '../../../services/agent.services';
 import { AuthService } from '../../../services/auth.service';
+import { ProfileService } from '../../../services/profile.service';
+import { ProfileDialogComponent } from '../profile-dialog/profile-dialog.component';
+
+// Types for SLA data
+interface ActiveSLA {
+  trackingId: string;
+  ticketId: string;
+  ticketNumber: string;
+  priority: string;
+  category: string;
+  responseDueAt: string;
+  resolutionDueAt: string;
+  responseBreached: boolean;
+  resolutionBreached: boolean;
+  slaStatus: string;
+  timeRemaining: string;
+}
+
+interface BreachedSLA {
+  trackingId: string;
+  ticketId: string;
+  ticketNumber: string;
+  priority: string;
+  category: string;
+  responseDueAt: string;
+  resolutionDueAt: string;
+  responseTimeMinutes: number;
+  resolutionTimeHours: number;
+  slaStatus: string;
+  responseBreached: boolean;
+  resolutionBreached: boolean;
+}
 
 @Component({
   selector: 'app-agent-dashboard',
   standalone: true,
   imports: [
     CommonModule,
+    DatePipe,
     FormsModule,
     MatCardModule,
     MatButtonModule,
@@ -36,7 +69,8 @@ import { AuthService } from '../../../services/auth.service';
     MatDialogModule,
     MatSelectModule,
     MatFormFieldModule,
-    MatInputModule
+    MatInputModule,
+    ProfileDialogComponent
   ],
   templateUrl: './dashboard.html',
   styleUrls: ['./dashboard.scss']
@@ -45,16 +79,20 @@ export class AgentDashboardComponent implements OnInit {
   assignments: Assignment[] = [];
   filteredAssignments: Assignment[] = [];
   slaWarnings: SLAWarning[] = [];
+  activeSLAs: ActiveSLA[] = [];
+  breachedSLAs: BreachedSLA[] = [];
   stats: AgentStats | null = null;
   
   loading = false;
   loadingStats = false;
   loadingSLA = false;
+  loadingActiveSLA = false;
+  loadingBreachedSLA = false;
   
   username: string = '';
   selectedTab = 0;
   filterStatus: string = 'ALL';
-  sortBy: string = 'PRIORITY'; // ✅ ADD: Default sort by priority
+  sortBy: string = 'PRIORITY';
 
   statusOptions = [
     { value: 'ALL', label: 'All Tickets' },
@@ -64,7 +102,6 @@ export class AgentDashboardComponent implements OnInit {
     { value: 'ESCALATED', label: 'Escalated' }
   ];
 
-  // ✅ ADD: Sort options
   sortOptions = [
     { value: 'PRIORITY', label: 'Priority (High to Low)' },
     { value: 'DATE_NEW', label: 'Newest First' },
@@ -72,13 +109,12 @@ export class AgentDashboardComponent implements OnInit {
     { value: 'STATUS', label: 'Status' }
   ];
 
-  // ✅ ADD: Priority order for sorting
   private priorityOrder: { [key: string]: number } = {
     'CRITICAL': 1,
     'HIGH': 2,
     'MEDIUM': 3,
     'LOW': 4,
-    '': 5, // No priority last
+    '': 5,
     null: 5
   };
 
@@ -87,7 +123,8 @@ export class AgentDashboardComponent implements OnInit {
     private authService: AuthService,
     private router: Router,
     private snackBar: MatSnackBar,
-    private dialog: MatDialog
+    private dialog: MatDialog,
+    private profileService: ProfileService
   ) {
     this.username = this.authService.getUsername() || 'Agent';
   }
@@ -96,6 +133,8 @@ export class AgentDashboardComponent implements OnInit {
     this.loadAssignments();
     this.loadStats();
     this.loadSLAWarnings();
+    this.loadActiveSLAs();
+    this.loadBreachedSLAs();
   }
 
   loadAssignments(): void {
@@ -142,22 +181,49 @@ export class AgentDashboardComponent implements OnInit {
     });
   }
 
-  // ✅ UPDATE: Combined filter and sort
+  loadActiveSLAs(): void {
+    this.loadingActiveSLA = true;
+    this.agentService.getActiveSLAs().subscribe({
+      next: (slas: ActiveSLA[]) => {
+        this.activeSLAs = slas || [];
+        console.log('   Active SLAs loaded:', slas.length);
+        this.loadingActiveSLA = false;
+      },
+      error: (error) => {
+        console.error('Error loading active SLAs:', error);
+        this.activeSLAs = [];
+        this.loadingActiveSLA = false;
+      }
+    });
+  }
+
+  loadBreachedSLAs(): void {
+    this.loadingBreachedSLA = true;
+    this.agentService.getBreachedSLAs().subscribe({
+      next: (slas: BreachedSLA[]) => {
+        this.breachedSLAs = slas || [];
+        console.log('   Breached SLAs loaded:', slas.length);
+        this.loadingBreachedSLA = false;
+      },
+      error: (error) => {
+        console.error('Error loading breached SLAs:', error);
+        this.breachedSLAs = [];
+        this.loadingBreachedSLA = false;
+      }
+    });
+  }
+
   applyFiltersAndSort(): void {
-    // First, filter by status
     let filtered = [...this.assignments];
     
     if (this.filterStatus !== 'ALL') {
       filtered = filtered.filter(a => a.ticketStatus === this.filterStatus);
     }
 
-    // Then, sort
     filtered = this.sortAssignments(filtered);
-
     this.filteredAssignments = filtered;
   }
 
-  // ✅ ADD: Sorting logic
   private sortAssignments(assignments: Assignment[]): Assignment[] {
     return assignments.sort((a, b) => {
       switch (this.sortBy) {
@@ -185,7 +251,6 @@ export class AgentDashboardComponent implements OnInit {
     this.applyFiltersAndSort();
   }
 
-  // ✅ ADD: Sort change handler
   onSortChange(): void {
     this.applyFiltersAndSort();
   }
@@ -207,7 +272,7 @@ export class AgentDashboardComponent implements OnInit {
   }
 
   getPriorityColor(priority: string): string {
-    if (!priority) return ''; // ✅ Handle null/undefined
+    if (!priority) return '';
     
     switch (priority) {
       case 'CRITICAL': return 'warn';
@@ -216,6 +281,26 @@ export class AgentDashboardComponent implements OnInit {
       case 'LOW': return 'primary';
       default: return '';
     }
+  }
+
+  getSLAStatusColor(slaStatus: string): string {
+    const colors: { [key: string]: string } = {
+      'ON_TIME': '#43a047',
+      'AT_RISK': '#fdd835',
+      'BREACHED': '#e53935',
+      'RESOLVED': '#43a047'
+    };
+    return colors[slaStatus] || '#757575';
+  }
+
+  getSLAStatusIcon(slaStatus: string): string {
+    const icons: { [key: string]: string } = {
+      'ON_TIME': 'check_circle',
+      'AT_RISK': 'warning',
+      'BREACHED': 'error',
+      'RESOLVED': 'check'
+    };
+    return icons[slaStatus] || 'info';
   }
 
   formatDate(date: string): string {
@@ -232,5 +317,58 @@ export class AgentDashboardComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  openProfile(): void {
+    this.profileService.getCurrentUser().subscribe({
+      next: user => {
+        const ref = this.dialog.open(ProfileDialogComponent, {
+          width: '420px',
+          data: {
+            username: user.username,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName
+          }
+        });
+
+        ref.afterClosed().subscribe(result => {
+          if (result) {
+            const payload = {
+              name: result.username,
+              email: result.email
+            };
+
+            this.profileService.updateCurrentUser(payload).subscribe({
+              next: updated => {
+                this.username = updated.username;
+                localStorage.setItem('username', updated.username);
+                this.snackBar.open('Profile updated successfully', 'Close', {
+                  duration: 3000
+                });
+              },
+              error: () => {
+                this.snackBar.open('Failed to update profile', 'Close', {
+                  duration: 3000
+                });
+              }
+            });
+          }
+        });
+      },
+      error: () => {
+        this.snackBar.open('Failed to load profile', 'Close', {
+          duration: 3000
+        });
+      }
+    });
+  }
+
+  refreshAll(): void {
+    this.loadAssignments();
+    this.loadStats();
+    this.loadSLAWarnings();
+    this.loadActiveSLAs();
+    this.loadBreachedSLAs();
   }
 }

@@ -80,8 +80,8 @@ export class AnalyticsComponent implements OnInit {
     this.loadTicketAnalytics();
     this.loadAgentPerformance();
     this.loadSLAReport();
-    this.loadCategoryBreakdown();  // ✅ NEW
-    this.loadTrends();             // ✅ NEW
+    this.loadCategoryBreakdown();  //  NEW
+    this.loadTrends();             //  NEW
   }
 
 

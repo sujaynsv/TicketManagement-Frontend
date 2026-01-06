@@ -1,90 +1,471 @@
-<h2 mat-dialog-title>
-  <mat-icon>person</mat-icon>
+<h2 mat-dialog-title class="dialog-title">
+  <mat-icon [class]="'title-icon title-' + data.action">
+    {{ getTitleIcon() }}
+  </mat-icon>
   {{ getDialogTitle() }}
 </h2>
 
-<mat-dialog-content>
+<mat-dialog-content class="dialog-content">
+
   <!-- Confirmation for activate/deactivate -->
-  <div *ngIf="data.action === 'activate' || data.action === 'deactivate'" class="confirmation-message">
-    <mat-icon [style.color]="data.action === 'activate' ? '#4caf50' : '#f44336'" class="large-icon">
-      {{ data.action === 'activate' ? 'check_circle' : 'block' }}
-    </mat-icon>
-    <p>{{ getConfirmMessage() }}</p>
+  <div *ngIf="isConfirmAction()" class="confirmation-container">
+    <div class="confirmation-icon" [style.color]="getConfirmIconColor()">
+      <mat-icon class="large-icon">{{ getConfirmIcon() }}</mat-icon>
+    </div>
+    <p class="confirmation-message">{{ getConfirmMessage() }}</p>
+    <div class="info-box" [class.warning]="data.action === 'deactivate'">
+      <mat-icon>{{ data.action === 'activate' ? 'info' : 'warning' }}</mat-icon>
+      <span>
+        {{ data.action === 'activate' 
+          ? 'The user will be able to log in and access the system'
+          : 'The user will not be able to log in until reactivated'
+        }}
+      </span>
+    </div>
   </div>
 
   <!-- Edit User Form -->
-  <form [formGroup]="form" *ngIf="data.action === 'edit'">
-    <mat-form-field class="full-width">
+  <form [formGroup]="form" *ngIf="data.action === 'edit'" class="user-form">
+    <mat-form-field appearance="outline" class="full-width">
       <mat-label>First Name</mat-label>
-      <input matInput formControlName="firstName" placeholder="Enter first name">
-      <mat-icon matSuffix>person</mat-icon>
+      <input matInput formControlName="firstName" placeholder="Enter first name" />
+      <mat-icon matPrefix>person</mat-icon>
+      <mat-error *ngIf="getErrorMessage('firstName')">
+        {{ getErrorMessage('firstName') }}
+      </mat-error>
     </mat-form-field>
 
-    <mat-form-field class="full-width">
+    <mat-form-field appearance="outline" class="full-width">
       <mat-label>Last Name</mat-label>
-      <input matInput formControlName="lastName" placeholder="Enter last name">
-      <mat-icon matSuffix>person</mat-icon>
+      <input matInput formControlName="lastName" placeholder="Enter last name" />
+      <mat-icon matPrefix>person</mat-icon>
+      <mat-error *ngIf="getErrorMessage('lastName')">
+        {{ getErrorMessage('lastName') }}
+      </mat-error>
     </mat-form-field>
 
-    <mat-form-field class="full-width">
-      <mat-label>Email</mat-label>
-      <input matInput formControlName="email" type="email" placeholder="Enter email">
-      <mat-icon matSuffix>email</mat-icon>
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Email Address</mat-label>
+      <input matInput formControlName="email" type="email" placeholder="Enter email" />
+      <mat-icon matPrefix>email</mat-icon>
+      <mat-error *ngIf="getErrorMessage('email')">
+        {{ getErrorMessage('email') }}
+      </mat-error>
     </mat-form-field>
   </form>
 
   <!-- Change Role Form -->
-  <form [formGroup]="form" *ngIf="data.action === 'role'">
-    <mat-form-field class="full-width">
+  <form [formGroup]="form" *ngIf="data.action === 'role'" class="user-form">
+    <mat-form-field appearance="outline" class="full-width">
       <mat-label>Select New Role</mat-label>
       <mat-select formControlName="role">
         <mat-option *ngFor="let role of roles" [value]="role">
-          {{ role }}
+          {{ getRoleDisplayName(role) }}
         </mat-option>
       </mat-select>
-      <mat-icon matSuffix>security</mat-icon>
+      <mat-icon matPrefix>security</mat-icon>
+      <mat-error *ngIf="getErrorMessage('role')">
+        {{ getErrorMessage('role') }}
+      </mat-error>
     </mat-form-field>
-    <p class="info-text">
+
+    <div class="info-box">
       <mat-icon>info</mat-icon>
-      Current Role: <strong>{{ data.user.role }}</strong>
-    </p>
+      <div>
+        <p class="info-label">Current Role</p>
+        <p class="role-badge" [class]="'role-' + data.user.role">
+          {{ getRoleDisplayName(data.user.role) }}
+        </p>
+      </div>
+    </div>
+
+    <div class="role-description">
+      <p class="description-text">
+        <strong>{{ getRoleDisplayName(form.get('role')?.value || data.user.role) }}</strong>
+        - {{ getRoleDescription(form.get('role')?.value || data.user.role) }}
+      </p>
+    </div>
   </form>
 
   <!-- Assign Manager Form -->
-  <form [formGroup]="form" *ngIf="data.action === 'manager'">
-    <mat-form-field class="full-width">
+  <form [formGroup]="form" *ngIf="data.action === 'manager'" class="user-form">
+    <mat-form-field appearance="outline" class="full-width">
       <mat-label>Select Manager</mat-label>
       <mat-select formControlName="managerId">
-        <mat-option *ngFor="let manager of data.managers" [value]="manager.userId">
-          {{ manager.firstName }} {{ manager.lastName }} ({{ manager.username }})
-        </mat-option>
+        <mat-optgroup label="Available Managers">
+          <mat-option *ngFor="let manager of data.managers" [value]="manager.userId">
+            {{ manager.firstName }} {{ manager.lastName }}
+            <span class="manager-username">({{ manager.username }})</span>
+          </mat-option>
+        </mat-optgroup>
       </mat-select>
-      <mat-icon matSuffix>supervised_user_circle</mat-icon>
+      <mat-icon matPrefix>supervised_user_circle</mat-icon>
+      <mat-error *ngIf="getErrorMessage('managerId')">
+        {{ getErrorMessage('managerId') }}
+      </mat-error>
     </mat-form-field>
+
+    <div class="info-box" *ngIf="data.managers && data.managers.length === 0">
+      <mat-icon>warning</mat-icon>
+      <span>No managers available in the system</span>
+    </div>
   </form>
 
   <!-- Reset Password Form -->
-  <form [formGroup]="form" *ngIf="data.action === 'password'">
-    <mat-form-field class="full-width">
+  <form [formGroup]="form" *ngIf="data.action === 'password'" class="user-form">
+    <mat-form-field appearance="outline" class="full-width">
       <mat-label>New Password</mat-label>
-      <input matInput formControlName="newPassword" type="password" placeholder="Enter new password">
-      <mat-icon matSuffix>lock</mat-icon>
+      <input matInput formControlName="newPassword" type="password" placeholder="Enter new password" />
+      <mat-icon matPrefix>lock</mat-icon>
+      <mat-error *ngIf="getErrorMessage('newPassword')">
+        {{ getErrorMessage('newPassword') }}
+      </mat-error>
     </mat-form-field>
-    <p class="warning-text">
+
+    <div class="password-requirements">
+      <div class="requirement" [class.met]="(form.get('newPassword')?.value?.length || 0) >= 6">
+        <mat-icon>{{ (form.get('newPassword')?.value?.length || 0) >= 6 ? 'check_circle' : 'radio_button_unchecked' }}</mat-icon>
+        <span>At least 6 characters</span>
+      </div>
+    </div>
+
+    <div class="warning-box">
       <mat-icon>warning</mat-icon>
-      Password must be at least 6 characters long
-    </p>
+      <span>Make sure to share the new password securely with the user</span>
+    </div>
   </form>
+
 </mat-dialog-content>
 
-<mat-dialog-actions align="end">
-  <button mat-button (click)="onCancel()">
+<mat-dialog-actions align="end" class="dialog-actions">
+  <button mat-button (click)="onCancel()" [disabled]="loading">
     <mat-icon>close</mat-icon>
     Cancel
   </button>
-  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="loading || (form.invalid && data.action !== 'activate' && data.action !== 'deactivate')">
-    <mat-icon *ngIf="!loading">check</mat-icon>
-    <mat-spinner *ngIf="loading" diameter="20"></mat-spinner>
-    {{ loading ? 'Processing...' : 'Confirm' }}
+
+  <button 
+    mat-raised-button 
+    color="primary" 
+    (click)="onSubmit()"
+    [disabled]="loading || (form.invalid && !isConfirmAction())"
+    class="submit-button"
+  >
+    <mat-icon *ngIf="!loading" class="button-icon">
+      {{ data.action === 'activate' ? 'check_circle' : 
+         data.action === 'deactivate' ? 'block' :
+         data.action === 'password' ? 'vpn_key' : 'check' }}
+    </mat-icon>
+    <mat-spinner *ngIf="loading" diameter="20" class="button-spinner"></mat-spinner>
+    <span>{{ loading ? 'Processing...' : getSubmitButtonText() }}</span>
   </button>
 </mat-dialog-actions>
+
+<style>
+  :host {
+    --primary-color: var(--color-primary, #2196f3);
+    --success-color: #4caf50;
+    --error-color: #f44336;
+    --warning-color: #ff9800;
+    --text-color: var(--color-text, #333);
+    --border-color: var(--color-border, #e0e0e0);
+    --bg-secondary: var(--color-secondary, #f5f5f5);
+  }
+
+  .dialog-title {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 0 !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: var(--text-color) !important;
+
+    .title-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+
+      &.title-edit {
+        color: #2196f3;
+      }
+
+      &.title-role {
+        color: #ff9800;
+      }
+
+      &.title-activate {
+        color: #4caf50;
+      }
+
+      &.title-deactivate {
+        color: #f44336;
+      }
+
+      &.title-manager {
+        color: #9c27b0;
+      }
+
+      &.title-password {
+        color: #607d8b;
+      }
+    }
+  }
+
+  .dialog-content {
+    padding: 24px;
+    max-height: 600px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background: var(--border-color);
+      border-radius: 4px;
+
+      &:hover {
+        background: #999;
+      }
+    }
+  }
+
+  .confirmation-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    padding: 24px;
+    text-align: center;
+
+    .confirmation-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background-color: rgba(76, 175, 80, 0.1);
+      animation: scaleIn 0.3s ease-out;
+
+      .large-icon {
+        font-size: 48px;
+        width: 48px;
+        height: 48px;
+      }
+    }
+
+    .confirmation-message {
+      font-size: 16px;
+      margin: 0;
+      color: var(--text-color);
+      font-weight: 500;
+    }
+  }
+
+  .user-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .full-width {
+    width: 100%;
+  }
+
+  .info-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background-color: var(--bg-secondary);
+    border-left: 4px solid var(--primary-color);
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--text-color);
+
+    mat-icon {
+      flex-shrink: 0;
+      color: var(--primary-color);
+    }
+
+    &.warning {
+      border-left-color: var(--warning-color);
+      background-color: rgba(255, 152, 0, 0.05);
+
+      mat-icon {
+        color: var(--warning-color);
+      }
+    }
+
+    .info-label {
+      margin: 0;
+      font-weight: 600;
+      font-size: 12px;
+    }
+
+    .role-badge {
+      margin: 4px 0 0 0;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-weight: 600;
+      font-size: 12px;
+      display: inline-block;
+
+      &.role-ADMIN {
+        background-color: rgba(233, 30, 99, 0.2);
+        color: #e91e63;
+      }
+
+      &.role-SUPPORT_MANAGER {
+        background-color: rgba(255, 152, 0, 0.2);
+        color: #ff9800;
+      }
+
+      &.role-SUPPORT_AGENT {
+        background-color: rgba(76, 175, 80, 0.2);
+        color: #4caf50;
+      }
+
+      &.role-END_USER {
+        background-color: rgba(33, 150, 243, 0.2);
+        color: #2196f3;
+      }
+    }
+  }
+
+  .role-description {
+    padding: 12px;
+    background-color: rgba(33, 150, 243, 0.05);
+    border-radius: 4px;
+    border-left: 4px solid var(--primary-color);
+
+    .description-text {
+      margin: 0;
+      font-size: 13px;
+      color: var(--text-color);
+      line-height: 1.5;
+    }
+  }
+
+  .manager-username {
+    font-size: 12px;
+    opacity: 0.6;
+  }
+
+  .password-requirements {
+    padding: 12px;
+    background-color: var(--bg-secondary);
+    border-radius: 4px;
+
+    .requirement {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-color);
+
+      mat-icon {
+        font-size: 16px;
+        width: 16px;
+        height: 16px;
+        opacity: 0.5;
+      }
+
+      &.met {
+        color: var(--success-color);
+
+        mat-icon {
+          opacity: 1;
+        }
+      }
+    }
+  }
+
+  .warning-box {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background-color: rgba(244, 67, 54, 0.05);
+    border-left: 4px solid var(--error-color);
+    border-radius: 4px;
+    font-size: 13px;
+    color: var(--text-color);
+
+    mat-icon {
+      flex-shrink: 0;
+      color: var(--error-color);
+    }
+  }
+
+  .dialog-actions {
+    padding: 16px 24px;
+    gap: 8px;
+    border-top: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+
+      .button-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+
+      .button-spinner {
+        margin: 0 8px 0 0;
+      }
+    }
+
+    .submit-button {
+      min-width: 140px;
+    }
+  }
+
+  @keyframes scaleIn {
+    from {
+      transform: scale(0.8);
+      opacity: 0;
+    }
+    to {
+      transform: scale(1);
+      opacity: 1;
+    }
+  }
+
+  @media (max-width: 600px) {
+    .dialog-content {
+      max-height: 70vh;
+    }
+
+    .confirmation-container {
+      padding: 16px;
+    }
+
+    .dialog-title {
+      font-size: 16px !important;
+
+      .title-icon {
+        font-size: 20px;
+        width: 20px;
+        height: 20px;
+      }
+    }
+
+    .dialog-actions {
+      flex-direction: column;
+
+      button {
+        width: 100%;
+      }
+    }
+  }
+</style>

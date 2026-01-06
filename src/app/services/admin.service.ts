@@ -8,7 +8,7 @@ import { environment } from '../../environments/environment';
 })
 export class AdminService {
 
-  // ✅ Microservices Base URLs
+  //  Microservices Base URLs
   private userServiceUrl = `${environment.apiUrl}/admin/users`;
   private ticketServiceUrl = `${environment.apiUrl}/admin/tickets`;
   private assignmentServiceUrl = `${environment.apiUrl}/admin/assignments`;
@@ -400,14 +400,27 @@ export class AdminService {
     );
   }
 
+  getActiveSLAs(): Observable<any> {
+  return this.http.get<any>(`${environment.apiUrl}/sla/active`).pipe(
+    map(response => Array.isArray(response) ? response : response.content || [])
+  );
+}
+
+getBreachedSLAs(): Observable<any> {
+  return this.http.get<any>(`${environment.apiUrl}/sla/breached`).pipe(
+    map(response => Array.isArray(response) ? response : response.content || [])
+  );
+}
+
+
   /**
    * Reassign ticket to a different agent
    * POST /admin/assignments/reassign
    */
 reassignTicket(assignmentId: string, newAgentId: string, reason: string): Observable<any> {
   return this.http.put(`${this.assignmentServiceUrl}/${assignmentId}/reassign`, { 
-    newAgentId,  // ✅ Correct field name
-    reason       // ✅ Include reason
+    newAgentId,  //  Correct field name
+    reason       //  Include reason
   });
 }
 
@@ -421,6 +434,18 @@ reassignTicket(assignmentId: string, newAgentId: string, reason: string): Observ
     })
   );
 }
+
+    manualAssign(payload: {
+    ticketId: string;
+    agentId: string;
+    priority: string;
+    assignmentNotes: string;
+    }) {
+    return this.http.post(
+        `${environment.apiUrl}/assignments/manual`,
+        payload
+    );
+    }
 
 
 }

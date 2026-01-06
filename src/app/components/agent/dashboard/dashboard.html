@@ -12,7 +12,7 @@
         </div>
         
         <div class="header-right">
-          <button mat-raised-button color="primary" routerLink="/agent/profile">
+          <button mat-raised-button color="primary" (click)="openProfile()">
             <mat-icon>person</mat-icon>
             Profile
           </button>
@@ -224,7 +224,182 @@
         </div>
       </mat-tab>
 
-      <!-- Tab 2: SLA Warnings -->
+      <!-- Tab 2: Active SLAs -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">check_circle</mat-icon>
+          Active SLAs
+          <span class="tab-badge" *ngIf="activeSLAs.length > 0">
+            {{ activeSLAs.length }}
+          </span>
+        </ng-template>
+
+        <div class="tab-content">
+          <!-- Loading State -->
+          <div class="loading-container" *ngIf="loadingActiveSLA">
+            <mat-spinner diameter="50"></mat-spinner>
+            <p>Loading active SLAs...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-state" *ngIf="!loadingActiveSLA && activeSLAs.length === 0">
+            <mat-icon>check_circle_outline</mat-icon>
+            <h3>All SLAs On Time!</h3>
+            <p>All your ticket SLAs are on track.</p>
+          </div>
+
+          <!-- Active SLAs List -->
+          <div class="active-slas-list" *ngIf="!loadingActiveSLA && activeSLAs.length > 0">
+            <mat-card 
+              class="active-sla-card priority-{{ sla.priority || 'NONE' }}" 
+              *ngFor="let sla of activeSLAs"
+              (click)="viewTicket(sla.ticketId)"
+            >
+              <mat-card-header>
+                <div class="sla-header">
+                  <div class="ticket-number">
+                    <mat-icon>confirmation_number</mat-icon>
+                    {{ sla.ticketNumber }}
+                  </div>
+                  
+                  <mat-chip [style.background-color]="getSLAStatusColor(sla.slaStatus)" class="sla-status">
+                    <mat-icon>{{ getSLAStatusIcon(sla.slaStatus) }}</mat-icon>
+                    {{ sla.slaStatus }}
+                  </mat-chip>
+                </div>
+              </mat-card-header>
+
+              <mat-card-content>
+                <div class="ticket-meta">
+                  <div class="meta-item">
+                    <mat-icon>priority_high</mat-icon>
+                    <span>Priority: {{ sla.priority }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <mat-icon>category</mat-icon>
+                    <span>{{ sla.category }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <mat-icon>timer</mat-icon>
+                    <span>{{ sla.timeRemaining }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <mat-icon>access_time</mat-icon>
+                    <span>Response Due: {{ sla.responseDueAt | date:'short' }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <mat-icon>event_note</mat-icon>
+                    <span>Resolution Due: {{ sla.resolutionDueAt | date:'short' }}</span>
+                  </div>
+                </div>
+
+                <div class="sla-status" style="margin-top: 12px;">
+                  <span *ngIf="!sla.responseBreached" class="sla-badge success">
+                    <mat-icon>check</mat-icon> Response On Time
+                  </span>
+                  <span *ngIf="!sla.resolutionBreached" class="sla-badge success">
+                    <mat-icon>check</mat-icon> Resolution On Time
+                  </span>
+                </div>
+              </mat-card-content>
+
+              <mat-card-actions>
+                <button mat-raised-button color="primary">
+                  <mat-icon>visibility</mat-icon>
+                  View Ticket
+                </button>
+              </mat-card-actions>
+            </mat-card>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Tab 3: Breached SLAs -->
+      <mat-tab>
+        <ng-template mat-tab-label>
+          <mat-icon class="tab-icon">error</mat-icon>
+          Breached SLAs
+          <span class="tab-badge breached" *ngIf="breachedSLAs.length > 0">
+            {{ breachedSLAs.length }}
+          </span>
+        </ng-template>
+
+        <div class="tab-content">
+          <!-- Loading State -->
+          <div class="loading-container" *ngIf="loadingBreachedSLA">
+            <mat-spinner diameter="50"></mat-spinner>
+            <p>Loading breached SLAs...</p>
+          </div>
+
+          <!-- Empty State -->
+          <div class="empty-state" *ngIf="!loadingBreachedSLA && breachedSLAs.length === 0">
+            <mat-icon>thumb_up</mat-icon>
+            <h3>No Breached SLAs!</h3>
+            <p>Great work! All SLAs are being met.</p>
+          </div>
+
+          <!-- Breached SLAs List -->
+          <div class="breached-slas-list" *ngIf="!loadingBreachedSLA && breachedSLAs.length > 0">
+            <mat-card 
+              class="breached-sla-card priority-{{ sla.priority || 'NONE' }} sla-breached" 
+              *ngFor="let sla of breachedSLAs"
+              (click)="viewTicket(sla.ticketId)"
+            >
+              <mat-card-header>
+                <div class="sla-header">
+                  <div class="ticket-number">
+                    <mat-icon>confirmation_number</mat-icon>
+                    {{ sla.ticketNumber }}
+                  </div>
+                  
+                  <mat-chip [style.background-color]="'#e53935'" class="sla-status">
+                    <mat-icon>error</mat-icon>
+                    BREACHED
+                  </mat-chip>
+                </div>
+              </mat-card-header>
+
+              <mat-card-content>
+                <div class="ticket-meta">
+                  <div class="meta-item">
+                    <mat-icon>priority_high</mat-icon>
+                    <span>Priority: {{ sla.priority }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <mat-icon>category</mat-icon>
+                    <span>{{ sla.category }}</span>
+                  </div>
+                  <div class="meta-item" *ngIf="sla.responseBreached">
+                    <mat-icon>timer_off</mat-icon>
+                    <span>Response Breached: {{ sla.responseTimeMinutes }} mins</span>
+                  </div>
+                  <div class="meta-item" *ngIf="sla.resolutionBreached">
+                    <mat-icon>assignment_late</mat-icon>
+                    <span>Resolution Breached: {{ sla.resolutionTimeHours }} hours</span>
+                  </div>
+                  <div class="meta-item">
+                    <mat-icon>access_time</mat-icon>
+                    <span>Response Due: {{ sla.responseDueAt | date:'short' }}</span>
+                  </div>
+                  <div class="meta-item">
+                    <mat-icon>event_note</mat-icon>
+                    <span>Resolution Due: {{ sla.resolutionDueAt | date:'short' }}</span>
+                  </div>
+                </div>
+              </mat-card-content>
+
+              <mat-card-actions>
+                <button mat-raised-button color="warn">
+                  <mat-icon>trending_up</mat-icon>
+                  Resolve Now
+                </button>
+              </mat-card-actions>
+            </mat-card>
+          </div>
+        </div>
+      </mat-tab>
+
+      <!-- Tab 4: SLA Warnings -->
       <mat-tab>
         <ng-template mat-tab-label>
           <mat-icon class="tab-icon">warning</mat-icon>
@@ -251,7 +426,7 @@
           <!-- SLA Warnings List -->
           <div class="sla-warnings-list" *ngIf="!loadingSLA && slaWarnings.length > 0">
             <mat-card 
-              class="sla-warning-card" 
+              class="sla-warning-card sla-at-risk priority-{{ warning.priority || 'NONE' }}"
               *ngFor="let warning of slaWarnings"
               (click)="viewTicket(warning.ticketId)"
             >
@@ -308,6 +483,7 @@
           </div>
         </div>
       </mat-tab>
+
     </mat-tab-group>
   </mat-card>
 </div>
